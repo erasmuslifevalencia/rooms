@@ -1,0 +1,150 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f5f1;--card:#fff;--ink:#1d1b18;--muted:#6f6a62;--line:#e7e2d9;--accent:#e8622a;--accent-ink:#fff;--ok:#1f7a45;--chip:#f1ede6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}
+header{padding:28px 16px 12px;max-width:1100px;margin:0 auto}h1{font-size:28px;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0}
+.filters{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.filters .in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select,input,textarea{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);min-width:0}
+main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:18px}
+.flat{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.gal{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;background:#eee;height:220px}
+.gal img{height:220px;width:auto;max-width:85%;object-fit:cover;scroll-snap-align:start;flex:none}
+.gal.empty{display:none}
+.fh{padding:16px 16px 6px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fh h2{margin:0;font-size:19px}.addr{color:var(--muted);font-size:14px}
+.badge{display:inline-block;background:var(--chip);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
+.badge.g{background:#fde7ef;color:#a3255a}
+.mix{padding:2px 16px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.mix .lbl{margin-right:2px}.mate{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px}
+.mate.F{background:#fde7ef;color:#a3255a}.mate.M{background:#e3eefc;color:#1f4f99}.mate.free{background:#e6f4ea;color:#1f7a45}.mate.u{background:var(--chip);color:var(--muted)}
+.mixsum{font-weight:600;color:var(--ink);margin-left:4px}
+.desc{padding:0 16px;color:var(--muted);font-size:14px}
+.rooms{padding:10px 16px 16px;display:grid;gap:10px}
+.room{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center}
+.room .t{font-weight:600}.room .p{font-size:20px;font-weight:700}.room .p small{font-size:12px;font-weight:500;color:var(--muted)}
+.room .meta{color:var(--muted);font-size:13px;grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.av{color:var(--ok);font-weight:600}
+.room .rph{grid-column:1/-1;display:flex;gap:4px;overflow-x:auto}.room .rph img{height:90px;border-radius:8px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button[disabled]{opacity:.5}
+.none{text-align:center;color:var(--muted);padding:40px 0}
+dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 24px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:20px;display:grid;gap:10px}.dlg h3{margin:0}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlg label{display:grid;gap:4px;font-size:13px;color:var(--muted)}.err{color:#b3261e;font-weight:600}.hp{position:absolute;left:-9999px}
+.chk{display:flex!important;grid-template-columns:none;gap:8px;align-items:flex-start;color:var(--ink)!important}
+.chk input{margin-top:3px}.x{background:none;color:var(--muted);padding:6px 10px}
+footer{max-width:1100px;margin:0 auto;padding:10px 16px 40px;color:var(--muted);font-size:13px}
+.views{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}.views button{background:none;color:var(--muted);padding:6px 12px;border-radius:8px}.views button.on{background:var(--ink);color:#fff}
+.cal{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px;max-height:calc(100vh - 150px)}
+.cal table{border-collapse:separate;border-spacing:0;font-size:12px;width:max-content;min-width:100%}
+.cal th,.cal td{border-bottom:1px solid var(--line);padding:0;text-align:center;white-space:nowrap}
+.cal thead th{position:sticky;top:0;background:#faf8f5;z-index:2;padding:8px 6px;font-weight:600;min-width:52px}
+.cal .rh{position:sticky;left:0;background:#fff;z-index:1;text-align:left;padding:6px 10px;border-right:1px solid var(--line);min-width:150px}
+.cal thead .rh{z-index:3;background:#faf8f5}.cal .fr td{background:#faf8f5;text-align:left;padding:8px 10px;font-weight:700;font-size:13px}
+.cal .fr td span{font-weight:500;color:var(--muted)}.cal .rh small{color:var(--muted)}
+.c{display:block;margin:3px;border-radius:6px;padding:5px 0;font-weight:600}.c .fl{margin-left:2px;font-size:11px;font-weight:400}.c.free{background:#e6f4ea;color:#1f7a45;cursor:pointer}.c.free:hover{outline:2px solid #1f7a45}
+.c.F{background:#fde7ef;color:#a3255a}.c.M{background:#e3eefc;color:#1f4f99}.c.u{background:var(--chip);color:var(--muted)}.c.na{background:#e6f4ea;color:#1f7a45;opacity:.55}
+.cal th.hl{background:#fff1d6}.y2{display:none}
+@media(max-width:600px){.cal{max-height:calc(100vh - 110px);border-radius:12px}.cal table{font-size:11px}
+.cal thead th{min-width:42px;padding:6px 2px;font-size:11px}.y4{display:none}.y2{display:inline}
+.cal .rh{min-width:0;width:58px;max-width:58px;padding:4px 6px}.cal .rh small{display:block;font-size:10px}.rl{display:none}
+.cal .fr td{padding:7px 8px;font-size:12px}.cal .fr td.rh{overflow:visible;white-space:nowrap;z-index:2;border-right:0}
+.c{margin:2px;padding:2px 0;line-height:1.15;font-size:12px;min-height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box}
+.c .fl{display:block;margin:1px 0 0;font-size:14px}.c.free,.c.na{font-size:10px}.legend .c{min-height:0;display:inline-block;padding:2px 8px;font-size:12px}}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}.legend .c{display:inline-block;padding:2px 8px;margin:0}
+@media(max-width:560px){.row2{grid-template-columns:1fr}.room{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>Rooms available in Valencia</h1><p class="sub">Student rooms in shared flats · live availability · __BRAND__</p></header>
+<div class="filters"><div class="in">
+<select id="fm" aria-label="Move-in month"></select>
+<select id="fg" aria-label="Flat type"><option value="">All flats</option><option>Mixed</option><option>Girls only</option><option>Boys only</option></select>
+<select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Up to 400 €/month</option><option value="450">Up to 450 €/month</option><option value="500">Up to 500 €/month</option><option value="550">Up to 550 €/month</option></select>
+<span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on">List</button><button type="button" id="vc">Calendar</button></span></div></div>
+<main id="list"></main>
+<footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded after the contract ends. Questions: WhatsApp __WHATSAPP__.</footer>
+<dialog id="dlg"><form class="dlg" id="frm" method="dialog">
+<h3 id="dt"></h3><p class="sub" id="dd"></p>
+<div class="row2"><label>Move-in<select name="from" id="ffrom" required></select></label><label>Move-out (last month)<select name="to" id="fto" required></select></label></div>
+<div id="dmix"></div>
+<div class="row2"><label>Full name (as on your ID)<input name="name" required maxlength="80"></label><label>I am<select name="gender" id="fgender" required><option value="">Choose…</option><option value="Girl">a girl</option><option value="Boy">a boy</option></select></label></div>
+<div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" required></label></div>
+<div class="row2"><label>Nationality<input name="nationality" required></label><label>ID document<select name="idType"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label></div>
+<label>ID number<input name="idNumber" required></label>
+<label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date, questions…"></textarea></label>
+<input class="hp" name="website" tabindex="-1" autocomplete="off">
+<label class="chk"><input type="checkbox" name="accept"> <span>I understand this is a request: the room is confirmed only after the team accepts it, I sign the contract and the deposit is received. My data is used only to manage this booking.</span></label>
+<p class="err" id="ferr"></p>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="x" id="cl">Cancel</button><button type="submit" id="send">Send request</button></div>
+</form></dialog>
+<script>
+const D=/*__DATA__*/null;const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const lab=m=>M[+m.slice(5,7)-1]+' '+m.slice(0,4);
+const add=(m,n)=>{let y=+m.slice(0,4),k=+m.slice(5,7)-1+n;y+=Math.floor(k/12);k=((k%12)+12)%12;return y+'-'+String(k+1).padStart(2,'0')};
+const months=[];for(let m=D.start;m<=D.end;m=add(m,1))months.push(m);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fm=document.getElementById('fm');fm.innerHTML='<option value="">Any move-in month</option>'+months.map(m=>'<option value="'+m+'">From '+lab(m)+'</option>').join('');
+const span=(a,b)=>(+b.slice(0,4)-+a.slice(0,4))*12+(+b.slice(5,7))-(+a.slice(5,7))+1;
+function fits(r,m){return r.windows.some(w=>w.from<=m&&m<=w.to&&span(m,w.open?D.end:w.to)>=r.minMonths)}
+let VIEW='list';
+function render(){if(VIEW==='cal')return renderCal();const m=fm.value,g=document.getElementById('fg').value,p=+document.getElementById('fp').value||0;let n=0;
+const html=D.flats.filter(f=>!g||f.gender===g).map(f=>{const rooms=f.rooms.filter(r=>(!m||fits(r,m))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
+return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>'+
+'<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
+'<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+(f.description?'<p class="desc">'+esc(f.description)+'</p>':'')+
+'<div class="rooms">'+rooms.map(r=>{const w=r.windows[0];const tot=r.rent+r.gastos+r.cleaning;
+return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span class="sub">· ref '+esc(r.ref)+'</span>':'')+'</div>'+
+'<div class="av">Available '+r.windows.map(w=>'from '+lab(w.from)+(w.open?'':' to '+lab(w.to))).join(' · ')+'</div></div>'+
+'<div class="p">'+tot+' € <small>/month</small></div>'+
+'<div class="meta"><span>'+r.rent+' € rent</span><span>+ '+r.gastos+' € utilities</span>'+(r.cleaning?'<span>+ '+r.cleaning+' € cleaning</span>':'')+'<span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
+(r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>':'')+
+'<div style="grid-column:1/-1"><button onclick="openReq(\''+f.id+'\',\''+esc(r.room)+'\')">Request this room</button></div></div>'}).join('')+'</div></section>'}).join('');
+document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try another month, or ask us on WhatsApp __WHATSAPP__.</p>';
+document.getElementById('cnt').textContent=n+' room'+(n===1?'':'s');}
+function renderCal(){const g=document.getElementById('fg').value,p=+document.getElementById('fp').value||0,hm=fm.value;let n=0;
+let h='<div class="legend"><b style="color:#1d1b18">Overview of every room</b><span class="c free">free</span><span class="c F">♀ girl</span><span class="c M">♂ boy</span><span class="c u">taken</span><span class="c na">free, stay too short</span><span>Click a green month to request that room.</span></div>'+
+'<div class="cal"><table><thead><tr><th class="rh"><span class="rl">Flat · room</span><span class="y2">Room</span></th>'+months.map(m=>'<th'+(m===hm?' class="hl"':'')+'>'+M[+m.slice(5,7)-1]+'<br><span style="font-weight:400;color:#6f6a62"><span class="y4">'+m.slice(0,4)+'</span><span class="y2">’'+m.slice(2,4)+'</span></span></th>').join('')+'</tr></thead><tbody>';
+(D.cal||[]).filter(f=>!g||f.gender===g).forEach(f=>{const rs=f.rooms.filter(r=>!p||r.total<=p);if(!rs.length)return;
+ const lf=D.flats.find(x=>x.id===f.id);
+ h+='<tr class="fr"><td class="rh">'+esc(f.name)+(f.gender!=='Mixed'?' <span>· '+esc(f.gender)+'</span>':'')+'</td><td colspan="'+months.length+'"></td></tr>';
+ rs.forEach(r=>{n++;const lr=lf&&lf.rooms.find(x=>x.room===r.room);
+  h+='<tr><td class="rh"><span class="rl">Room </span><b class="y2">R</b>'+esc(r.room)+' <small><span class="rl">· </span>'+r.total+' €</small></td>'+months.map((m,i)=>{const c=r.code[i]||'?';
+   if(c==='_'){const ok=lr&&fits(lr,m);return '<td><span class="c '+(ok?'free':'na')+'"'+(ok?' data-f="'+esc(f.id)+'" data-r="'+esc(r.room)+'" data-m="'+m+'" title="Request room '+esc(r.room)+' from '+lab(m)+'"':' title="Free, but shorter than the minimum stay"')+'>free</span></td>'}
+   const cc=(r.nat||[])[i]||'';return '<td><span class="c '+(c==='F'?'F':c==='M'?'M':'u')+'"'+(cc?' title="'+esc(cname(cc))+'"':'')+'>'+(c==='F'?'♀':c==='M'?'♂':'–')+(cc?'<small class="fl">'+flag(cc)+'</small>':'')+'</span></td>'}).join('')+'</tr>'})});
+h+='</tbody></table></div>';
+document.getElementById('list').innerHTML=n?h:'<p class="none">No room matches these filters.</p>';
+document.getElementById('cnt').textContent=n+' room'+(n===1?'':'s');
+document.querySelectorAll('.c.free[data-f]').forEach(x=>x.onclick=()=>openReq(x.dataset.f,x.dataset.r,x.dataset.m));
+if(hm){const th=document.querySelector('.cal th.hl');if(th)th.scrollIntoView({inline:'center',block:'nearest'})}}
+function setView(v){VIEW=v;document.getElementById('vl').classList.toggle('on',v==='list');document.getElementById('vc').classList.toggle('on',v==='cal');render()}
+document.getElementById('vl').onclick=()=>setView('list');document.getElementById('vc').onclick=()=>setView('cal');
+function firstFree(f,rooms){let best=null;rooms.forEach(r=>{const w=r.windows[0];if(w&&(!best||w.from<best))best=w.from});return best||D.start}
+const flag=cc=>cc&&cc.length===2&&cc!=='XK'?String.fromCodePoint(...[...cc].map(ch=>127397+ch.charCodeAt(0))):'';
+const cname=cc=>(D.countries||{})[cc]||'';
+function mixHtml(f,m){const code=(f.mix||{})[m];if(!code)return'';let F=0,Mm=0;const nat=(f.nat||{})[m]||[];
+const chips=f.allRooms.map((room,i)=>{const c=code[i];if(c==='F')F++;if(c==='M')Mm++;const cc=nat[i]||'';
+const cls=c==='F'?'F':c==='M'?'M':c==='_'?'free':'u';const t=c==='F'?'♀ girl':c==='M'?'♂ boy':c==='_'?'free':'taken';
+return '<span class="mate '+cls+'" title="Room '+esc(room)+(cc?' · '+esc(cname(cc)):'')+'">R'+esc(room)+' '+t+(cc&&c!=='_'?' · '+flag(cc)+' '+esc(cname(cc)):'')+'</span>'}).join('');
+return '<div class="mix"><span class="lbl">Flatmates in '+lab(m)+':</span>'+chips+'<span class="mixsum">'+F+' girl'+(F===1?'':'s')+' · '+Mm+' boy'+(Mm===1?'':'s')+'</span></div>'}
+['fm','fg','fp'].forEach(id=>document.getElementById(id).onchange=render);render();
+let cur=null;const dlg=document.getElementById('dlg'),ff=document.getElementById('ffrom'),ft=document.getElementById('fto');
+function openReq(fid,room,pm){const f=D.flats.find(x=>x.id===fid),r=f.rooms.find(x=>x.room===room);cur={f,r};
+document.getElementById('dt').textContent=f.name+' · Room '+r.room;
+document.getElementById('dd').textContent=(r.rent+r.gastos+r.cleaning)+' €/month · deposit '+r.deposit+' €'+(r.minMonths>1?' · minimum '+r.minMonths+' months':'');
+const starts=[];r.windows.forEach(w=>{for(let m=w.from;m<=w.to;m=add(m,1))if(fits(r,m))starts.push(m)});
+ff.innerHTML=starts.map(m=>'<option value="'+m+'">'+lab(m)+'</option>').join('');if(pm&&starts.includes(pm))ff.value=pm;else if(fm.value&&starts.includes(fm.value))ff.value=fm.value;fillTo();
+const gs=document.getElementById('fgender');gs.querySelectorAll('option').forEach(o=>{o.disabled=(f.gender==='Girls only'&&o.value==='Boy')||(f.gender==='Boys only'&&o.value==='Girl')});
+gs.value=f.gender==='Girls only'?'Girl':f.gender==='Boys only'?'Boy':'';
+document.getElementById('ferr').textContent='';dlg.showModal();}
+function fillTo(){document.getElementById('dmix').innerHTML=mixHtml(cur.f,ff.value);const r=cur.r,m=ff.value;const w=r.windows.find(w=>w.from<=m&&m<=w.to);const last=w.open?D.end:w.to;const ends=[];
+for(let e=add(m,r.minMonths-1);e<=last;e=add(e,1))ends.push(e);ft.innerHTML=ends.map(e=>'<option value="'+e+'">'+lab(e)+'</option>').join('');
+ft.value=ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
+ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
+document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');
+o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
+google.script.run.withSuccessHandler(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;return}
+ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
+.withFailureHandler(()=>{b.disabled=false;b.textContent='Send request';document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp __WHATSAPP__.'}).submitRequest(o)};
+</script></body></html>
