@@ -56,7 +56,7 @@ footer{max-width:1100px;margin:0 auto;padding:10px 16px 40px;color:var(--muted);
 .c{margin:2px;padding:2px 0;line-height:1.15;font-size:12px;min-height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box}
 .c .fl{display:block;margin:1px 0 0;font-size:14px}.c.free,.c.na{font-size:10px}.legend .c{min-height:0;display:inline-block;padding:2px 8px;font-size:12px}}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}.legend .c{display:inline-block;padding:2px 8px;margin:0}
 @media(max-width:560px){.row2{grid-template-columns:1fr}.room{grid-template-columns:1fr}}
-</style></head><body>
+.cf-turnstile{min-height:65px}</style><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></head><body>
 <header><h1>Rooms available in Valencia</h1><p class="sub">Student rooms in shared flats · live availability · Erasmus Life Valencia</p></header>
 <div class="filters"><div class="in">
 <select id="fm" aria-label="Move-in month"></select>
@@ -76,6 +76,7 @@ footer{max-width:1100px;margin:0 auto;padding:10px 16px 40px;color:var(--muted);
 <label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date, questions…"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off">
 <label class="chk"><input type="checkbox" name="accept"> <span>I understand this is a request: the room is confirmed only after the team accepts it, I sign the contract and the deposit is received. My data is used only to manage this booking.</span></label>
+<div class="cf-turnstile" data-sitekey="0x4AAAAAAFq9sMjm174kYGTv" data-theme="light" data-size="flexible"></div>
 <p class="err" id="ferr"></p>
 <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="x" id="cl">Cancel</button><button type="submit" id="send">Send request</button></div>
 </form></dialog>
@@ -152,7 +153,7 @@ ft.value=ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
 document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
-post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;return}
+post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
 ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
-.catch(()=>{b.disabled=false;b.textContent='Send request';document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 634 300 402.'})};
+.catch(()=>{b.disabled=false;b.textContent='Send request';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 634 300 402.'})};
 </script></body></html>

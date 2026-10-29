@@ -33,5 +33,8 @@ fetch(API+'?p=json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('http 
 <script type="text/plain" id="app">
 """ % (json.dumps(api), WA)
 s = s[:i] + loader + main + '</script></body></html>'
+import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from turnstile import add_turnstile
+s = add_turnstile(s)
 open(sys.argv[3] if len(sys.argv) > 3 else 'index.html', 'w').write(s)
 print('index.html', len(s))
