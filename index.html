@@ -95,7 +95,7 @@ const add=(m,n)=>{let y=+m.slice(0,4),k=+m.slice(5,7)-1+n;y+=Math.floor(k/12);k=
 const months=[];for(let m=D.start;m<=D.end;m=add(m,1))months.push(m);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=document.getElementById('fm'),ft2=document.getElementById('ft2'),fg=document.getElementById('fg');fm.innerHTML='<option value="">Any move-in month</option>'+months.map(m=>'<option value="'+m+'">From '+lab(m)+'</option>').join('');
-function fillTo2(){const a=fm.value,old=ft2.value;ft2.disabled=!a;ft2.innerHTML='<option value="">'+(a?'Until any month':'Until…')+'</option>'+(a?months.filter(m=>m>=a).map(m=>'<option value="'+m+'">Until '+lab(m)+'</option>').join(''):'');ft2.value=a&&old>=a?old:''}
+function fillTo2(){const a=fm.value,old=ft2.value;ft2.disabled=!a;ft2.innerHTML='<option value="">'+(a?'Until any month':'Until…')+'</option>'+(a?months.filter(m=>m>=a&&['01','06','07','08'].includes(m.slice(5))).map(m=>'<option value="'+m+'">Until '+lab(m)+'</option>').join(''):'');ft2.value=a&&old>=a?old:''}
 fillTo2();
 fg.innerHTML='<option value="">All flats</option><optgroup label="Flat type"><option>Mixed</option><option>Girls only</option></optgroup><optgroup label="Flat">'+D.flats.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>'<option value="id:'+esc(f.id)+'">'+esc(f.name)+'</option>').join('')+'</optgroup>';
 const flatOk=f=>{const g=fg.value;return !g||(g.startsWith('id:')?String(f.id)===g.slice(3):f.gender===g)};
