@@ -59,8 +59,8 @@ footer{max-width:1100px;margin:0 auto;padding:10px 16px 40px;color:var(--muted);
 .cf-turnstile{min-height:65px}</style><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></head><body>
 <header><h1>Rooms available in Valencia</h1><p class="sub">Student rooms in shared flats · live availability · Erasmus Life Valencia</p></header>
 <div class="filters"><div class="in">
-<select id="fm" aria-label="Move-in month"></select>
-<select id="fg" aria-label="Flat type"><option value="">All flats</option><option>Mixed</option><option>Girls only</option><option>Boys only</option></select>
+<select id="fm" aria-label="Move-in month"></select><select id="ft2" aria-label="Move-out month" disabled></select>
+<select id="fg" aria-label="Flat type"><option value="">All flats</option><option>Mixed</option><option>Girls only</option></select>
 <select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Up to 400 €/month</option><option value="450">Up to 450 €/month</option><option value="500">Up to 500 €/month</option><option value="550">Up to 550 €/month</option></select>
 <span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on">List</button><button type="button" id="vc">Calendar</button></span></div></div>
 <main id="list"><p class="none" id="loading">Loading the rooms…</p></main>
@@ -94,12 +94,18 @@ const lab=m=>M[+m.slice(5,7)-1]+' '+m.slice(0,4);
 const add=(m,n)=>{let y=+m.slice(0,4),k=+m.slice(5,7)-1+n;y+=Math.floor(k/12);k=((k%12)+12)%12;return y+'-'+String(k+1).padStart(2,'0')};
 const months=[];for(let m=D.start;m<=D.end;m=add(m,1))months.push(m);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fm=document.getElementById('fm');fm.innerHTML='<option value="">Any move-in month</option>'+months.map(m=>'<option value="'+m+'">From '+lab(m)+'</option>').join('');
+const fm=document.getElementById('fm'),ft2=document.getElementById('ft2'),fg=document.getElementById('fg');fm.innerHTML='<option value="">Any move-in month</option>'+months.map(m=>'<option value="'+m+'">From '+lab(m)+'</option>').join('');
+function fillTo2(){const a=fm.value,old=ft2.value;ft2.disabled=!a;ft2.innerHTML='<option value="">'+(a?'Until any month':'Until…')+'</option>'+(a?months.filter(m=>m>=a).map(m=>'<option value="'+m+'">Until '+lab(m)+'</option>').join(''):'');ft2.value=a&&old>=a?old:''}
+fillTo2();
+fg.innerHTML='<option value="">All flats</option><optgroup label="Flat type"><option>Mixed</option><option>Girls only</option></optgroup><optgroup label="Flat">'+D.flats.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>'<option value="id:'+esc(f.id)+'">'+esc(f.name)+'</option>').join('')+'</optgroup>';
+const flatOk=f=>{const g=fg.value;return !g||(g.startsWith('id:')?String(f.id)===g.slice(3):f.gender===g)};
 const span=(a,b)=>(+b.slice(0,4)-+a.slice(0,4))*12+(+b.slice(5,7))-(+a.slice(5,7))+1;
 function fits(r,m){return r.windows.some(w=>w.from<=m&&m<=w.to&&span(m,w.open?D.end:w.to)>=r.minMonths)}
+/** Room free for the whole stay a..b (months), and the stay is at least the minimum. */
+function fitsRange(r,a,b){if(!b)return fits(r,a);return span(a,b)>=r.minMonths&&r.windows.some(w=>w.from<=a&&(w.open||b<=w.to))}
 let VIEW='list';
-function render(){if(VIEW==='cal')return renderCal();const m=fm.value,g=document.getElementById('fg').value,p=+document.getElementById('fp').value||0;let n=0;
-const html=D.flats.filter(f=>!g||f.gender===g).map(f=>{const rooms=f.rooms.filter(r=>(!m||fits(r,m))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
+function render(){if(VIEW==='cal')return renderCal();const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0;let n=0;
+const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
 return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>'+
 '<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
 '<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+(f.description?'<p class="desc">'+esc(f.description)+'</p>':'')+
@@ -110,12 +116,12 @@ return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span 
 '<div class="meta"><span>'+r.rent+' € rent</span><span>+ '+r.gastos+' € utilities</span>'+(r.cleaning?'<span>+ '+r.cleaning+' € cleaning</span>':'')+'<span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
 (r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>':'')+
 '<div style="grid-column:1/-1"><button onclick="openReq(\''+f.id+'\',\''+esc(r.room)+'\')">Request this room</button></div></div>'}).join('')+'</div></section>'}).join('');
-document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try another month, or ask us on WhatsApp +34 634 300 402.</p>';
+document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try other months, or ask us on WhatsApp +34 634 300 402.</p>';
 document.getElementById('cnt').textContent=n+' room'+(n===1?'':'s');}
-function renderCal(){const g=document.getElementById('fg').value,p=+document.getElementById('fp').value||0,hm=fm.value;let n=0;
+function renderCal(){const p=+document.getElementById('fp').value||0,hm=fm.value,he=ft2.value||hm;let n=0;
 let h='<div class="legend"><b style="color:#1d1b18">Overview of every room</b><span class="c free">free</span><span class="c F">♀ girl</span><span class="c M">♂ boy</span><span class="c u">taken</span><span class="c na">free, stay too short</span><span>Click a green month to request that room.</span></div>'+
-'<div class="cal"><table><thead><tr><th class="rh"><span class="rl">Flat · room</span><span class="y2">Room</span></th>'+months.map(m=>'<th'+(m===hm?' class="hl"':'')+'>'+M[+m.slice(5,7)-1]+'<br><span style="font-weight:400;color:#6f6a62"><span class="y4">'+m.slice(0,4)+'</span><span class="y2">’'+m.slice(2,4)+'</span></span></th>').join('')+'</tr></thead><tbody>';
-(D.cal||[]).filter(f=>!g||f.gender===g).forEach(f=>{const rs=f.rooms.filter(r=>!p||r.total<=p);if(!rs.length)return;
+'<div class="cal"><table><thead><tr><th class="rh"><span class="rl">Flat · room</span><span class="y2">Room</span></th>'+months.map(m=>'<th'+(hm&&m>=hm&&m<=he?' class="hl"':'')+'>'+M[+m.slice(5,7)-1]+'<br><span style="font-weight:400;color:#6f6a62"><span class="y4">'+m.slice(0,4)+'</span><span class="y2">’'+m.slice(2,4)+'</span></span></th>').join('')+'</tr></thead><tbody>';
+(D.cal||[]).filter(flatOk).forEach(f=>{const rs=f.rooms.filter(r=>!p||r.total<=p);if(!rs.length)return;
  const lf=D.flats.find(x=>x.id===f.id);
  h+='<tr class="fr"><td class="rh">'+esc(f.name)+(f.gender!=='Mixed'?' <span>· '+esc(f.gender)+'</span>':'')+'</td><td colspan="'+months.length+'"></td></tr>';
  rs.forEach(r=>{n++;const lr=lf&&lf.rooms.find(x=>x.room===r.room);
@@ -137,7 +143,7 @@ const chips=f.allRooms.map((room,i)=>{const c=code[i];if(c==='F')F++;if(c==='M')
 const cls=c==='F'?'F':c==='M'?'M':c==='_'?'free':'u';const t=c==='F'?'♀ girl':c==='M'?'♂ boy':c==='_'?'free':'taken';
 return '<span class="mate '+cls+'" title="Room '+esc(room)+(cc?' · '+esc(cname(cc)):'')+'">R'+esc(room)+' '+t+(cc&&c!=='_'?' · '+flag(cc)+' '+esc(cname(cc)):'')+'</span>'}).join('');
 return '<div class="mix"><span class="lbl">Flatmates in '+lab(m)+':</span>'+chips+'<span class="mixsum">'+F+' girl'+(F===1?'':'s')+' · '+Mm+' boy'+(Mm===1?'':'s')+'</span></div>'}
-['fm','fg','fp'].forEach(id=>document.getElementById(id).onchange=render);render();
+['ft2','fg','fp'].forEach(id=>document.getElementById(id).onchange=render);fm.onchange=()=>{fillTo2();render()};render();
 let cur=null;const dlg=document.getElementById('dlg'),ff=document.getElementById('ffrom'),ft=document.getElementById('fto');
 function openReq(fid,room,pm){const f=D.flats.find(x=>x.id===fid),r=f.rooms.find(x=>x.room===room);cur={f,r};
 document.getElementById('dt').textContent=f.name+' · Room '+r.room;
@@ -149,7 +155,7 @@ gs.value=f.gender==='Girls only'?'Girl':f.gender==='Boys only'?'Boy':'';
 document.getElementById('ferr').textContent='';dlg.showModal();}
 function fillTo(){document.getElementById('dmix').innerHTML=mixHtml(cur.f,ff.value);const r=cur.r,m=ff.value;const w=r.windows.find(w=>w.from<=m&&m<=w.to);const last=w.open?D.end:w.to;const ends=[];
 for(let e=add(m,r.minMonths-1);e<=last;e=add(e,1))ends.push(e);ft.innerHTML=ends.map(e=>'<option value="'+e+'">'+lab(e)+'</option>').join('');
-ft.value=ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
+ft.value=(ft2.value&&ends.includes(ft2.value)&&m===fm.value)?ft2.value:ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
 document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
