@@ -1,8 +1,6 @@
 {
   "name": "ELV Rooms Office",
   "short_name": "ELV Office",
-  "start_url": "./",
-  "scope": "./",
   "display": "standalone",
   "background_color": "#f6f2ef",
   "theme_color": "#4f0a2f",
