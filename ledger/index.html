@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>ELV Rent Ledger</title>
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#4f0a2f">
+<link rel="icon" href="../icon-192.png"><link rel="apple-touch-icon" href="../icon-180.png"><link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ELV Ledger">
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,#4f0a2f,#6e1446 55%,#8e1f5c);color:#fff;font:15px/1.5 Inter,system-ui,sans-serif}</style>
+</head><body><p id="ld">Loading the Rent Ledger…</p>
+<script>
+/* GitHub copy of the Student Room Ledger (no Google banner).
+   It loads the page code from the Apps Script web app (?raw=1, code only, no data), so it is always the same version,
+   and replaces google.script.run with POST calls (doPost: {fn, args, key}). Every call needs the access key (LEDGER_KEY). */
+const LEDGER_API='https://script.google.com/macros/s/AKfycbzY-ShHbXQl8aC6P1Z0zG9I8ONKdEx3CQpshvG-uJCz_nF9I0_jOPIDxKm2j0D_bwO9/exec';
+try{const q=new URLSearchParams(location.search).get('k');if(q){localStorage.setItem('elv_ledger_k',q);history.replaceState(null,'',location.pathname)}}catch(e){}
+const SHIM='<script>window.LEDGER_API='+JSON.stringify(LEDGER_API)+';('+function(){
+ window.google={script:{run:new Proxy({},{get(_,k0){const st={ok(){},ko(){}};const runner=new Proxy({},{get(_,k){
+  if(k==='withSuccessHandler')return f=>{st.ok=f;return runner};if(k==='withFailureHandler')return f=>{st.ko=f;return runner};
+  return(...a)=>{fetch(window.LEDGER_API,{method:'POST',body:JSON.stringify({fn:k,args:a.slice(1),key:a[0]})})
+   .then(r=>{if(!r.ok)throw new Error('Network error ('+r.status+'), try again.');return r.json()})
+   .then(r=>{if(r&&r.ok)st.ok(r.result);else st.ko(new Error((r&&r.error)||'Something went wrong.'))},e=>st.ko(e))}}});return runner[k0]}})}};
+}+')();<\/script>';
+const HEAD='<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#4f0a2f">'+
+ '<link rel="icon" href="../icon-192.png"><link rel="apple-touch-icon" href="../icon-180.png"><link rel="manifest" href="manifest.json">';
+fetch(LEDGER_API+'?raw=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()}).then(h=>{
+ if(!/<head>/i.test(h))throw new Error('bad page');
+ h=h.replace(/<head>/i,'<head>'+HEAD+SHIM).replace(/<title>[^<]*<\/title>/i,'<title>ELV Rent Ledger</title>');
+ document.open();document.write(h);document.close();
+}).catch(()=>{document.getElementById('ld').textContent='The Rent Ledger could not be loaded. Check the connection and reload the page.'});
+</script></body></html>
