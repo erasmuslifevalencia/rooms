@@ -77,6 +77,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 .room{border-radius:14px}.room .p{font-size:24px;font-weight:800;color:var(--deep)}
 .views button.on{background:var(--plum2);color:var(--plum)}
 .cal th.hl{background:#fde8d8}
+.top .act a.langsw{background:#f47a24;border-color:#f47a24}
 .wa-float{position:fixed;right:16px;bottom:16px;background:#25d366;color:#fff;border-radius:999px;padding:11px 16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:9;font-size:14px;text-decoration:none}
 @media(max-width:700px){.filters{position:static}}
 @media(max-width:600px){.top img{height:44px}.top h1{font-size:20px}.wa-float{padding:10px 14px;font-size:13px}}
@@ -105,6 +106,60 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="x" id="cl">Cancel</button><button type="submit" id="send">Send request</button></div>
 </form></dialog>
 <script>
+/* ---- Language: EN / ES (auto from the browser, remembered) ---- */
+const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='es'||q==='en'){localStorage.setItem('elv_lang',q);return q}const s=localStorage.getItem('elv_lang');if(s==='es'||s==='en')return s}catch(e){}return /^es\b/i.test(navigator.language||'')?'es':'en'})();
+const WA_TXT='WhatsApp +34 634 300 402';
+const ES_EXACT={
+ 'Rooms available in Valencia':'Habitaciones disponibles en Valencia',
+ 'Student rooms in shared flats · live availability · request online in 2 minutes':'Habitaciones para estudiantes en pisos compartidos · disponibilidad en directo · solicitud online en 2 minutos',
+ 'Loading the rooms…':'Cargando las habitaciones…',
+ 'Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded after the contract ends. Questions: WhatsApp +34 634 300 402.':'Precios por mes. Los gastos (internet, luz, agua, gas) son un anticipo que se ajusta con las facturas reales al final del contrato. La fianza se paga por transferencia y se devuelve al terminar el contrato. Dudas: WhatsApp +34 634 300 402.',
+ 'The rooms could not be loaded. Please reload the page, or ask us on WhatsApp +34 634 300 402.':'No se han podido cargar las habitaciones. Recarga la página o escríbenos por WhatsApp +34 634 300 402.',
+ 'Any move-in month':'Cualquier mes de entrada','Until any month':'Hasta cualquier mes','Until…':'Hasta…',
+ 'All flats':'Todos los pisos','Mixed':'Mixto','Girls only':'Solo chicas','Boys only':'Solo chicos','Flat type':'Tipo de piso','Flat':'Piso',
+ 'Any price':'Cualquier precio','List':'Lista','Calendar':'Calendario',
+ 'Move-in month':'Mes de entrada','Move-out month':'Mes de salida','Max price':'Precio máximo',
+ 'Request this room':'Solicitar esta habitación',
+ 'No room matches these filters. Try other months, or ask us on WhatsApp +34 634 300 402.':'Ninguna habitación coincide con estos filtros. Prueba otros meses o escríbenos por WhatsApp +34 634 300 402.',
+ 'No room matches these filters.':'Ninguna habitación coincide con estos filtros.',
+ 'Overview of every room':'Vista general de todas las habitaciones',
+ 'free, stay too short':'libre, estancia demasiado corta',
+ 'Click a green month to request that room.':'Haz clic en un mes verde para solicitar esa habitación.',
+ 'Flat · room':'Piso · habitación','Free, but shorter than the minimum stay':'Libre, pero más corta que la estancia mínima',
+ 'Move-in':'Entrada','Move-out (last month)':'Salida (último mes)','Full name (as on your ID)':'Nombre completo (como en tu documento)',
+ 'I am':'Soy','Choose…':'Elige…','a girl':'una chica','a boy':'un chico','Phone / WhatsApp':'Teléfono / WhatsApp','Nationality':'Nacionalidad',
+ 'ID document':'Documento de identidad','Passport':'Pasaporte','National ID card':'Documento nacional de identidad (DNI)','ID number':'Número de documento',
+ 'Message (optional)':'Mensaje (opcional)','University, arrival date, questions…':'Universidad, fecha de llegada, preguntas…',
+ 'I understand this is a request: the room is confirmed only after the team accepts it, I sign the contract and the deposit is received. My data is used only to manage this booking.':'Entiendo que es una solicitud: la habitación solo queda confirmada cuando el equipo la acepta, firmo el contrato y se recibe la fianza. Mis datos solo se usan para gestionar esta reserva.',
+ 'Cancel':'Cancelar','Send request':'Enviar solicitud','Sending…':'Enviando…','Close':'Cerrar',
+ 'Something went wrong. Please try again or contact us on WhatsApp +34 634 300 402.':'Algo ha fallado. Inténtalo de nuevo o escríbenos por WhatsApp +34 634 300 402.',
+ 'Request sent ✓':'Solicitud enviada ✓',
+ 'Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).':'¡Gracias! Te hemos enviado un e-mail de confirmación. Nuestro equipo te contestará pronto con los siguientes pasos (revisa tu correo en los próximos días).',
+ 'Important:':'Importante:','our e-mails sometimes land in the':'a veces nuestros e-mails llegan a la','spam / junk folder':'carpeta de spam / correo no deseado',
+ '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
+ 'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
+ 'Please complete the "I am not a robot" check above the button, then send again.':'Completa la verificación «No soy un robot» encima del botón y vuelve a enviar.',
+ 'Portfolio':'Portafolio','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
+};
+const ES_RULES=[
+ [/^From ([A-Z][a-z]{2} \d{4})$/,'Desde $1'],[/^Until ([A-Z][a-z]{2} \d{4})$/,'Hasta $1'],
+ [/Up to (\d+) €\/month/g,'Hasta $1 €/mes'],[/^(\d+) rooms$/,'$1 habitaciones'],[/^1 room$/,'1 habitación'],
+ [/Flatmates in /g,'Compañeros en '],[/Available from /g,'Disponible desde '],[/\bfrom (?=[A-Z][a-z]{2} \d{4})/g,'desde '],[/ to (?=[A-Z][a-z]{2} \d{4})/g,' hasta '],
+ [/Request room (\S+) /g,'Solicitar habitación $1 '],[/\bRoom\b/g,'Habitación'],[/· floor /g,'· planta '],
+ [/€ rent/g,'€ alquiler'],[/€ utilities/g,'€ gastos'],[/€ cleaning/g,'€ limpieza'],[/€\/month/g,'€/mes'],[/\/month/g,'/mes'],
+ [/\bDeposit\b/g,'Fianza'],[/\bdeposit\b/g,'fianza'],[/\bMin\. (\d+) months\b/g,'Mín. $1 meses'],[/\bminimum (\d+) months\b/g,'mínimo $1 meses'],
+ [/(\d+) girls\b/g,'$1 chicas'],[/(\d+) girl\b/g,'$1 chica'],[/(\d+) boys\b/g,'$1 chicos'],[/(\d+) boy\b/g,'$1 chico'],
+ [/♀ girl\b/g,'♀ chica'],[/♂ boy\b/g,'♂ chico'],[/\bfree\b/g,'libre'],[/\btaken\b/g,'ocupada'],
+ [/\bJan\b/g,'Ene'],[/\bApr\b/g,'Abr'],[/\bAug\b/g,'Ago'],[/\bDec\b/g,'Dic']
+];
+function trText(s){if(LANG!=='es'||!s)return s;const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/);let t=m[2];if(!t)return s;
+ if(ES_EXACT[t]!=null)return m[1]+ES_EXACT[t]+m[3];ES_RULES.forEach(([re,to])=>{t=t.replace(re,to)});return m[1]+t+m[3]}
+function trNode(n){if(LANG!=='es')return;if(n.nodeType===3){const p=n.parentNode;if(p&&/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName))return;const v=trText(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;return}
+ if(n.nodeType!==1||/^(SCRIPT|STYLE)$/.test(n.nodeName))return;['placeholder','aria-label','title','label'].forEach(a=>{if(n.hasAttribute&&n.hasAttribute(a)){const v=trText(n.getAttribute(a));if(v!==n.getAttribute(a))n.setAttribute(a,v)}});
+ n.childNodes.forEach(trNode)}
+if(LANG==='es'){document.documentElement.lang='es';trNode(document.body);const ts=document.querySelector('.cf-turnstile');if(ts)ts.setAttribute('data-language','es');
+ new MutationObserver(ms=>ms.forEach(m=>{if(m.type==='characterData')trNode(m.target);else m.addedNodes.forEach(trNode)})).observe(document.body,{childList:true,subtree:true,characterData:true})}
+(()=>{const a=document.createElement('a');a.href='?lang='+(LANG==='es'?'en':'es');a.textContent=LANG==='es'?'English':'Español';a.className='langsw';const act=document.querySelector('.top .act');if(act)act.prepend(a)})();
 const API="https://script.google.com/macros/s/AKfycbwIilV5eP7YbUDPOUUo5BVNXXhVUDSKIpZI_3bSQZbJuuhJ-P4Vn1B_L1ShnX-PJmSPqw/exec";
 function post(body){return fetch(API,{method:'POST',body:JSON.stringify(body)}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.json()})}
 let D=null;
@@ -117,6 +172,8 @@ const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
 const lab=m=>M[+m.slice(5,7)-1]+' '+m.slice(0,4);
 const add=(m,n)=>{let y=+m.slice(0,4),k=+m.slice(5,7)-1+n;y+=Math.floor(k/12);k=((k%12)+12)%12;return y+'-'+String(k+1).padStart(2,'0')};
 const months=[];for(let m=D.start;m<=D.end;m=add(m,1))months.push(m);
+/* Google photos are served at the size we ask: smaller files on phones */
+const psz=(u,w)=>/googleusercontent\.com\//.test(u)?String(u).replace(/=w\d+(-h\d+)?$/,'')+'=w'+w:u;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=document.getElementById('fm'),ft2=document.getElementById('ft2'),fg=document.getElementById('fg');fm.innerHTML='<option value="">Any move-in month</option>'+months.map(m=>'<option value="'+m+'">From '+lab(m)+'</option>').join('');
 function fillTo2(){const a=fm.value,old=ft2.value;ft2.disabled=!a;ft2.innerHTML='<option value="">'+(a?'Until any month':'Until…')+'</option>'+(a?months.filter(m=>m>=a&&['01','06','07','08'].includes(m.slice(5))).map(m=>'<option value="'+m+'">Until '+lab(m)+'</option>').join(''):'');ft2.value=a&&old>=a?old:''}
@@ -130,7 +187,7 @@ function fitsRange(r,a,b){if(!b)return fits(r,a);return span(a,b)>=r.minMonths&&
 let VIEW='list';
 function render(){if(VIEW==='cal')return renderCal();const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0;let n=0;
 const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
-return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>'+
+return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,800))+'" alt="">').join('')+'</div>'+
 '<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
 '<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+(f.description?'<p class="desc">'+esc(f.description)+'</p>':'')+
 '<div class="rooms">'+rooms.map(r=>{const w=r.windows[0];const tot=r.rent+r.gastos+r.cleaning;
@@ -138,7 +195,7 @@ return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span 
 '<div class="av">Available '+r.windows.map(w=>'from '+lab(w.from)+(w.open?'':' to '+lab(w.to))).join(' · ')+'</div></div>'+
 '<div class="p">'+tot+' € <small>/month</small></div>'+
 '<div class="meta"><span>'+r.rent+' € rent</span><span>+ '+r.gastos+' € utilities</span>'+(r.cleaning?'<span>+ '+r.cleaning+' € cleaning</span>':'')+'<span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
-(r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" src="'+esc(u)+'" alt="">').join('')+'</div>':'')+
+(r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,400))+'" alt="">').join('')+'</div>':'')+
 '<div style="grid-column:1/-1"><button onclick="openReq(\''+f.id+'\',\''+esc(r.room)+'\')">Request this room</button></div></div>'}).join('')+'</div></section>'}).join('');
 document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try other months, or ask us on WhatsApp +34 634 300 402.</p>';
 document.getElementById('cnt').textContent=n+' room'+(n===1?'':'s');}
@@ -161,7 +218,7 @@ function setView(v){VIEW=v;document.getElementById('vl').classList.toggle('on',v
 document.getElementById('vl').onclick=()=>setView('list');document.getElementById('vc').onclick=()=>setView('cal');
 function firstFree(f,rooms){let best=null;rooms.forEach(r=>{const w=r.windows[0];if(w&&(!best||w.from<best))best=w.from});return best||D.start}
 const flag=cc=>cc&&cc.length===2&&cc!=='XK'?String.fromCodePoint(...[...cc].map(ch=>127397+ch.charCodeAt(0))):'';
-const cname=cc=>(D.countries||{})[cc]||'';
+const cname=cc=>{if(LANG==='es'&&cc){try{return new Intl.DisplayNames(['es'],{type:'region'}).of(cc)}catch(e){}}return (D.countries||{})[cc]||''};
 function mixHtml(f,m){const code=(f.mix||{})[m];if(!code)return'';let F=0,Mm=0;const nat=(f.nat||{})[m]||[];
 const chips=f.allRooms.map((room,i)=>{const c=code[i];if(c==='F')F++;if(c==='M')Mm++;const cc=nat[i]||'';
 const cls=c==='F'?'F':c==='M'?'M':c==='_'?'free':'u';const t=c==='F'?'♀ girl':c==='M'?'♂ boy':c==='_'?'free':'taken';
