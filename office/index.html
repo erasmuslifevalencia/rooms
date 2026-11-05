@@ -136,7 +136,7 @@ function tabs(){const n=D.bookings.filter(isTodo).length;
  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;CONV=null;render()});
  $('sum').textContent=n+' to do';}
 function card(b){const st=b.status;const idl=isIdl(b);let acts=idl?[]:(ACT[st]||[]);if(st==='EXPIRED'&&b.depositProofUrl)acts=[['paid','Deposit received','g']].concat(acts);
- const links=[b.contractPdfUrl&&'<a target="_blank" href="'+esc(b.contractPdfUrl)+'">contract PDF</a>',b.signedFileUrl&&b.signedFileUrl.split('\n').map((u,i)=>'<a target="_blank" href="'+esc(u)+'">signed '+(i+1)+'</a>').join(' '),
+ const links=[b.contractPdfUrl&&'<a target="_blank" href="'+esc(b.contractPdfUrl)+'">contract PDF</a>',b.contractEnPdfUrl&&'<a target="_blank" href="'+esc(b.contractEnPdfUrl)+'">EN</a>',b.signedFileUrl&&b.signedFileUrl.split('\n').map((u,i)=>'<a target="_blank" href="'+esc(u)+'">signed '+(i+1)+'</a>').join(' '),
   b.depositProofUrl&&b.depositProofUrl.split('\n').map((u,i)=>'<a target="_blank" href="'+esc(u)+'" style="font-weight:700;color:#1f7a45">deposit proof '+(i+1)+'</a>').join(' ')].filter(Boolean).join(' · ');
  return '<div class="card" id="c'+esc(b.id)+'"><div><div class="top"><span class="nm">'+esc(b.name)+'</span><span class="st '+esc(st.split(' ')[0])+'">'+esc(st)+'</span>'+
  '<span class="meta">'+esc(b.id)+' · '+esc(b.source)+'</span></div>'+
@@ -163,8 +163,8 @@ const WT={
   en:b=>'Thank you for signing your contract, '+b.first+'! ✅ The bank details for the deposit ('+b.deposit+' €) are in the e-mail we just sent you (check your spam too). Please make the transfer '+(b.until?'before '+b.until.en:'within 3 days')+' with the reference written in the e-mail, and upload the proof of payment with the link in the same e-mail.',
   es:b=>'¡Gracias por firmar tu contrato, '+b.first+'! ✅ Los datos bancarios para la fianza ('+b.deposit+' €) están en el e-mail que te acabamos de mandar (revisa también el spam). Haz la transferencia '+(b.until?'antes del '+b.until.es:'en un plazo de 3 días')+' con la referencia indicada en el e-mail, y sube el comprobante con el enlace del mismo e-mail.'},
  D:{n:'D. Booking confirmed',
-  en:b=>'We received your deposit, '+b.first+': your room at '+b.flat+' is confirmed! 🎉 All the next steps are in the confirmation e-mail: book your appointment to get the keys, create your Erasmus Life account for the free Premium card, and on the day bring your ID + the first month and the 50 € agency fee in cash. See you soon in Valencia! 😃',
-  es:b=>'¡Hemos recibido tu fianza, '+b.first+': tu habitación en '+b.flat+' está confirmada! 🎉 Todos los pasos están en el e-mail de confirmación: pide cita para recoger las llaves, crea tu cuenta Erasmus Life para la tarjeta Premium gratis, y ese día trae tu documento de identidad + el primer mes y los 50 € de agencia en efectivo. ¡Nos vemos pronto en Valencia! 😃'},
+  en:b=>'We received your deposit, '+b.first+': your room at '+b.flat+' is confirmed! 🎉 All the next steps are in the confirmation e-mail: book your appointment to get the keys, create your Erasmus Life account for the free Premium card, and on the day bring your ID + the first month and the '+b.fee+' € agency fee in cash. See you soon in Valencia! 😃',
+  es:b=>'¡Hemos recibido tu fianza, '+b.first+': tu habitación en '+b.flat+' está confirmada! 🎉 Todos los pasos están en el e-mail de confirmación: pide cita para recoger las llaves, crea tu cuenta Erasmus Life para la tarjeta Premium gratis, y ese día trae tu documento de identidad + el primer mes y los '+b.fee+' € de agencia en efectivo. ¡Nos vemos pronto en Valencia! 😃'},
  E:{n:'E. Room not available',
   en:b=>'Hi '+b.first+', sorry, this room is no longer available for these dates 😕 You can see all the rooms still free here: '+ROOMS_URL+' – tell us if one of them suits you!',
   es:b=>'Hola '+b.first+', lo sentimos, esta habitación ya no está disponible para esas fechas 😕 Aquí puedes ver todas las que siguen libres: '+ROOMS_URL+' – ¡dinos si alguna te interesa!'},
@@ -178,7 +178,8 @@ let WA_NEW='',WA_ST={};
 function waNum(p){p=String(p||'').trim();if(!p)return '';let d=p.replace(/[^0-9]/g,'');if(/^\+/.test(p))return d;if(d.startsWith('00'))return d.slice(2);if(d.length===9&&/^[67]/.test(d))return '34'+d;return d}
 function waUntil(h){const m=String(h||'').match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;const k=+m[2]-1,d=+m[3];
  const ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return{en:d+' '+M[k],es:d+' de '+ES[k]}}
-function waCtx(b){return{first:String(b.name||'').trim().split(/\s+/)[0]||'',flat:flatName(b.flatId),room:b.room,dates:lab(b.from)+' → '+lab(b.to),deposit:b.deposit,until:waUntil(b.holdUntil)}}
+function waCtx(b){return{first:String(b.name||'').trim().split(/\s+/)[0]||'',flat:flatName(b.flatId),room:b.room,dates:lab(b.from)+' → '+lab(b.to),deposit:b.deposit,until:waUntil(b.holdUntil),fee:agFee(b.from,b.to)}}
+function agFee(f,t){f=String(f||'');t=String(t||'');if(f.length<7||t.length<7)return 50;const fm=+f.slice(5,7),n=(+t.slice(0,4)*12+ +t.slice(5,7))-(+f.slice(0,4)*12+fm)+1;return fm>=6&&fm<=8&&n<=2?30:50}
 function waState(b){let s=WA_ST[b.id];if(!s){s=WA_ST[b.id]={tpl:WA_FOR[b.status]||'',lang:WA_ES.test(String(b.nationality||'').trim())?'es':'en',st:b.status}}
  if(s.st!==b.status){s.st=b.status;s.tpl=WA_FOR[b.status]||s.tpl;s.text=null}return s}
 function waSentInfo(b,tpl){const re=new RegExp('^\\[([^\\]]+)\\] WhatsApp '+tpl+' opened by (.+)$');let hit=null;String(b.notes||'').split('\n').forEach(l=>{const m=l.match(re);if(m)hit={at:m[1],by:m[2]}});return hit}
