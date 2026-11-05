@@ -189,7 +189,7 @@ function render(){if(VIEW==='cal')return renderCal();const m=fm.value,to=ft2.val
 const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
 return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,800))+'" alt="">').join('')+'</div>'+
 '<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
-'<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+(f.description?'<p class="desc">'+esc(f.description)+'</p>':'')+
+'<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+((LANG==='es'&&f.descriptionEs)||f.description?'<p class="desc">'+esc((LANG==='es'&&f.descriptionEs)||f.description)+'</p>':'')+
 '<div class="rooms">'+rooms.map(r=>{const w=r.windows[0];const tot=r.rent+r.gastos+r.cleaning;
 return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span class="sub">· ref '+esc(r.ref)+'</span>':'')+'</div>'+
 '<div class="av">Available '+r.windows.map(w=>'from '+lab(w.from)+(w.open?'':' to '+lab(w.to))).join(' · ')+'</div></div>'+
