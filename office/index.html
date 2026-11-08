@@ -108,7 +108,7 @@ if(!ELV_TOKEN)document.addEventListener('DOMContentLoaded',()=>elvLogin());
 <main id="main"><p class="empty">Loading…</p></main>
 <div class="toast" id="toast"></div>
 <script>
-const TOKEN=ELV_TOKEN;let D=null,TAB='todo',Q='',RB='',SF='',BSEL=new Set(),BF='',BT='',BRES='',CONV=null;
+const TOKEN=ELV_TOKEN;let D=null,TAB='todo',Q='',RB='',SF='',BSEL=new Set(),BF='',BT='',BRES='',CONV=null,XQ='',XID='';
 const isIdl=b=>b.status==='RESERVED'&&/^idealista/i.test(b.source||'');
 const isTodo=b=>TODO.includes(b.status)||isIdl(b);
 const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -132,7 +132,7 @@ const ACT={REQUEST:[['accept','Accept · send contract','p'],['reserve','Hold (n
 const HELP={accept:'The contract is generated and e-mailed to the student.',reject:'The student gets a polite e-mail. Optional: write a personal message in the box, it is added to the e-mail.',reserve:'The room is blocked, no e-mail is sent.',
  signed:'The IBAN e-mail is sent to the student.',paid:'The tenant is created in the Tenants tab. Booking confirmed.',cancel:'The room becomes free again (if the tenant was already created, it is deactivated in the Tenants tab). No e-mail to the student.'};
 function tabs(){const n=D.bookings.filter(isTodo).length;
- $('tabs').innerHTML=[['todo','To do',n],['new','New booking'],['block','Block rooms'],['all','All bookings'],['grid','Occupancy']].map(([k,t,c])=>'<button class="'+(TAB===k?'on':'')+'" data-t="'+k+'">'+t+(c?'<span class="n">'+c+'</span>':'')+'</button>').join('');
+ $('tabs').innerHTML=[['todo','To do',n],['new','New booking'],['extend','Extend stay'],['block','Block rooms'],['all','All bookings'],['grid','Occupancy']].map(([k,t,c])=>'<button class="'+(TAB===k?'on':'')+'" data-t="'+k+'">'+t+(c?'<span class="n">'+c+'</span>':'')+'</button>').join('');
  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;CONV=null;render()});
  $('sum').textContent=n+' to do';}
 function card(b){const st=b.status;const idl=isIdl(b);let acts=idl?[]:(ACT[st]||[]);if(st==='EXPIRED'&&b.depositProofUrl)acts=[['paid','Deposit received','g']].concat(acts);
@@ -227,7 +227,7 @@ function bindCards(){bindRb();bindWa();document.querySelectorAll('[data-cv]').fo
   try{const r=await call('officeAction',x.dataset.id,x.dataset.a,msg);if(r.ok!==false){WA_NEW=x.dataset.id}toast(r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),!r.ok||/ERROR|Not possible|No IBAN|missing|incomplete|choose/i.test(r.note||''))}
   catch(e){toast(e,true)}await load();if(WA_NEW&&WA_NEW===x.dataset.id){const nb=D.bookings.find(y=>y.id===WA_NEW);if(nb&&WA_FOR[nb.status])waOpen(WA_NEW)}})}
 function render(){tabs();const m=$('main');
- setStaff();if(TAB==='new')return renderNew();if(TAB==='grid')return renderGrid();if(TAB==='block')return renderBlock();
+ setStaff();if(TAB==='new')return renderNew();if(TAB==='extend')return renderExtend();if(TAB==='grid')return renderGrid();if(TAB==='block')return renderBlock();
  let list=D.bookings;if(TAB==='todo')list=list.filter(b=>isTodo(b)||(b.id===WA_NEW&&WA_FOR[b.status]));
  const q=Q.toLowerCase();if(q)list=list.filter(b=>(b.name+' '+b.email+' '+b.id+' '+flatName(b.flatId)+' '+b.status+' '+(b.rentedBy||'')).toLowerCase().includes(q));
  if(TAB==='all'&&SF){const blk=b=>b.status==='RESERVED'&&/^Office block|^idealista/i.test(b.source||'');
@@ -272,6 +272,33 @@ function renderConv(){const b=CONV,f=D.flats.find(x=>x.id===b.flatId)||{gender:'
    toast(r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),bad);CONV=null;await load();TAB=bad?'all':'todo';render()}
   catch(e){toast(e,true);bs.forEach(x=>x.disabled=false)}})}
 function busyIn(r,f,t){return r.occ.filter(o=>o.from<=t&&o.to>=f)}
+function renderExtend(){const q=XQ.toLowerCase();const T=(D.tenants||[]).filter(x=>!q||(x.name+' '+flatName(x.flatId)).toLowerCase().includes(q));
+ let h='<div class="tools"><input id="xq" placeholder="Search tenant or flat…" value="'+esc(XQ)+'" style="flex:1;max-width:320px"><button class="a" id="xrf">Refresh</button></div>'+
+ '<p class="meta" style="margin:0 0 10px">Extend the stay of a current tenant: a contract for the extra months is e-mailed to sign online. No new deposit (it is carried over). Once signed, the tenant’s end date is updated in the Ledger automatically.</p>';
+ h+=T.map(x=>{const f=D.flats.find(z=>z.id===x.flatId)||{rooms:[]},r=f.rooms.find(z=>z.room===x.room);
+  let s='<div class="card"><div><div class="top"><span class="nm">'+esc(x.name)+'</span><span class="meta">'+esc(flatName(x.flatId))+' R'+esc(x.room)+' · until '+lab(x.to)+'</span></div>';
+  if(x.open)s+='<p class="meta" style="margin:6px 0 0">Extension in progress: '+esc(x.open)+' (see All bookings)</p>';
+  else if(XID!==x.id)s+='<div class="acts" style="justify-content:flex-start"><button class="a p" data-xt="'+esc(x.id)+'">Extend…</button></div>';
+  else{const ends=[];if(r)for(let m=add(x.to,1);m<=D.end;m=add(m,1)){if(busyIn(r,m,m).length)break;ends.push(m)}
+   if(!ends.length)s+='<div class="warnbox" style="margin-top:6px">The room is not free in '+lab(add(x.to,1))+': no extension possible.</div><div class="acts" style="justify-content:flex-start"><button class="a" data-xc="1">Close</button></div>';
+   else{const def=ends.find(e=>e.slice(5)==='06')||ends.find(e=>e.slice(5)==='01')||ends[ends.length-1];
+    s+='<div class="form" style="margin-top:8px"><div class="g2"><label>Extension: from '+lab(add(x.to,1))+' to (last month)<select id="xto">'+ends.map(e=>'<option value="'+e+'"'+(e===def?' selected':'')+'>'+lab(e)+'</option>').join('')+'</select></label>'+
+    '<label>E-mail (the contract is sent here)<input id="xem" type="email" value="'+esc(x.email)+'"></label></div>'+
+    '<div class="g3"><label>Rent €<input id="xr" value="'+x.rent+'"></label><label>Utilities €<input id="xg" value="'+x.gastos+'"></label><label>Cleaning €<input id="xc" value="'+x.cleaning+'"></label></div>'+
+    (x.idNumber?'':'<label>ID number (missing in Tenants)<input id="xid"></label>')+
+    (r?'<p class="meta" style="margin:0">Current tenant price: '+x.rent+' + '+x.gastos+(x.cleaning?' + '+x.cleaning:'')+' € · Room price now in the Ledger: '+r.rent+' + '+r.gastos+(r.cleaning?' + '+r.cleaning:'')+' €</p>':'')+
+    '<div class="acts" style="justify-content:flex-start"><button class="a p" id="xgo">Send extension contract</button><button class="a" data-xc="1">Cancel</button></div></div>'}}
+  return s+'</div></div>'}).join('')||'<p class="empty">No current tenant.</p>';
+ $('main').innerHTML=h;
+ $('xq').oninput=e=>{XQ=e.target.value;const p=e.target.selectionStart;render();$('xq').focus();$('xq').setSelectionRange(p,p)};$('xrf').onclick=load;
+ document.querySelectorAll('[data-xt]').forEach(b=>b.onclick=()=>{XID=b.dataset.xt;render()});
+ document.querySelectorAll('[data-xc]').forEach(b=>b.onclick=()=>{XID='';render()});
+ const go=$('xgo');if(go)go.onclick=async()=>{if(!go.dataset.ok){go.dataset.ok='1';go.textContent='Click again to send the contract';return}
+  const x=(D.tenants||[]).find(z=>z.id===XID);const f={to:$('xto').value,email:$('xem').value.trim(),rent:$('xr').value.trim(),gastos:$('xg').value.trim(),cleaning:$('xc').value.trim(),idNumber:$('xid')?$('xid').value.trim():''};
+  go.disabled=true;go.textContent='Sending…';
+  try{const r=await call('officeExtend',XID,f);const bad=/ERROR|Not possible|No IBAN|missing|incomplete|choose/i.test(r.note||'');
+   toast((x?x.name+': ':'')+r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),bad);XID='';await load();TAB=bad?'all':'todo';render()}
+  catch(e){toast(e,true);go.disabled=false;go.dataset.ok='';go.textContent='Send extension contract'}}}
 function renderBlock(){const months=[];for(let x=D.start;x<=D.end;x=add(x,1))months.push(x);
  if(!BF){BF=months.find(x=>x.slice(5)==='07')||months[0];BT=add(BF,1)}if(BT<BF)BT=BF;
  const mo=v=>months.map(x=>'<option value="'+x+'"'+(x===v?' selected':'')+'>'+lab(x)+'</option>').join('');
@@ -326,5 +353,5 @@ async function create(mode){const f={flatId:$('nf').value,room:$('nr').value,fro
  try{const r=await call('officeCreate',f,mode);const bad=/ERROR|Not possible|No IBAN|missing|incomplete|choose/i.test(r.note||'');
   toast(r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),bad);await load();TAB=bad?'all':'todo';render()}
  catch(e){toast(e,true);bs.forEach(b=>b.disabled=false)}}
-load();setInterval(()=>{const a=document.activeElement;if(TAB!=='new'&&TAB!=='block'&&!(a&&a.classList&&a.classList.contains('rbi'))&&!(a&&a.tagName==='TEXTAREA'))load()},120000);
+load();setInterval(()=>{const a=document.activeElement;if(TAB!=='new'&&TAB!=='block'&&TAB!=='extend'&&!(a&&a.classList&&a.classList.contains('rbi'))&&!(a&&a.tagName==='TEXTAREA'))load()},120000);
 </script></body></html>
