@@ -149,7 +149,7 @@ const ES_EXACT={
  'Cancel':'Cancelar','Book this room':'Reservar esta habitación','Sending…':'Enviando…','Close':'Cerrar',
  'Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.':'Algo ha fallado. Inténtalo de nuevo o escríbenos por WhatsApp +34 695 01 48 94.',
  'Request sent ✓':'Solicitud enviada ✓',
- 'Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h. You will then have 72 h to sign it.':'¡Gracias! Te hemos enviado un e-mail de confirmación. Revisamos tu solicitud y te mandamos el contrato por e-mail en 24–48 h. Después tendrás 72 h para firmarlo.',
+ 'Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h.':'¡Gracias! Te hemos enviado un e-mail de confirmación. Revisamos tu solicitud y te mandamos el contrato por e-mail en 24–48 h.',
  'Important:':'Importante:','our e-mails sometimes land in the':'a veces nuestros e-mails llegan a la','spam / junk folder':'carpeta de spam / correo no deseado',
  '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
  'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
@@ -299,6 +299,6 @@ ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
 document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Book this room';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
-ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h. You will then have 72 h to sign it.</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
+ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h.</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
 .catch(()=>{b.disabled=false;b.textContent='Book this room';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.'})};
 </script><a class="wa-float" href="https://wa.me/34695014894" target="_blank" rel="noopener">💬 WhatsApp us</a></body></html>
