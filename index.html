@@ -81,6 +81,18 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 .wa-float{position:fixed;right:16px;bottom:16px;background:#25d366;color:#fff;border-radius:999px;padding:11px 16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:9;font-size:14px;text-decoration:none}
 @media(max-width:700px){.filters{position:static}}
 @media(max-width:600px){.top img{height:44px}.top h1{font-size:20px}.wa-float{padding:10px 14px;font-size:13px}}
+.mapwrap{max-width:1100px;margin:14px auto 0;padding:0 16px}
+.mapcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.maphead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;font-weight:600;color:var(--deep)}
+.maphead span{font-weight:400;color:var(--muted);font-size:13px}
+#elvmap{height:400px;background:#eef0f2}
+.leaflet-container img{max-width:none!important;max-height:none!important;border-radius:0!important;object-fit:initial!important}
+.pin{display:inline-block;transform:translate(-50%,-50%);background:var(--plum);color:#fff;border:2px solid #fff;border-radius:14px;padding:3px 8px;font:700 12px Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer}
+.pin.g{background:#d6497f}.pin.cl{background:var(--deep)}
+.lm{display:inline-block;transform:translate(-50%,-50%);background:#fff;color:var(--deep);border:1px solid var(--line);border-radius:10px;padding:2px 7px;font:600 11px Inter,system-ui,sans-serif;white-space:nowrap}
+.pop{font:14px/1.4 Inter,system-ui,sans-serif}.pop b{color:var(--deep)}.pop a{display:inline-block;margin-top:6px;background:var(--accent);color:#fff!important;border-radius:8px;padding:5px 10px;text-decoration:none;font-weight:700}
+#vm{display:none}
+@media(max-width:700px){#vm{display:inline-block}.mapwrap{display:none;padding:0 10px}.mapwrap.open{display:block}#elvmap{height:320px}.maphead span{display:none}}
 </style><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></head><body>
 <header class="top"><div class="in"><img src="elv-logo.png" alt="Erasmus Life"><div><h1>Rooms available in Valencia</h1><div class="sub">Student rooms in shared flats · live availability · request online in 2 minutes</div></div><div class="act"><a href="https://drive.google.com/file/d/1TSYQorjA0uKm_DceClfnBCNfaISYrzcR/view?usp=sharing" target="_blank" rel="noopener">Portfolio</a><a href="https://www.facebook.com/rentflatsvalencia/photos_albums" target="_blank" rel="noopener">Photo albums</a></div></div></header><div class="stripe"></div>
 <div class="filters"><div class="in">
@@ -139,7 +151,7 @@ const ES_EXACT={
  '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
  'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
  'Please complete the "I am not a robot" check above the button, then send again.':'Completa la verificación «No soy un robot» encima del botón y vuelve a enviar.',
- 'Portfolio':'Portafolio','Photo albums':'Álbumes de fotos','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
+ 'Portfolio':'Portafolio','Photo albums':'Álbumes de fotos','Where are the flats?':'¿Dónde están los pisos?','Click a flat to see its rooms':'Haz clic en un piso para ver sus habitaciones','🗺 Map':'🗺 Mapa','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
 };
 const ES_RULES=[
  [/^From ([A-Z][a-z]{2} \d{4})$/,'Desde $1'],[/^Until ([A-Z][a-z]{2} \d{4})$/,'Hasta $1'],
@@ -187,7 +199,7 @@ function fitsRange(r,a,b){if(!b)return fits(r,a);return span(a,b)>=r.minMonths&&
 let VIEW='list';
 function render(){if(VIEW==='cal')return renderCal();const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0;let n=0;
 const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
-return '<section class="flat"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,800))+'" alt="">').join('')+'</div>'+
+return '<section class="flat" id="f-'+esc(f.id)+'"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,800))+'" alt="">').join('')+'</div>'+
 '<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
 '<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+((LANG==='es'&&f.descriptionEs)||f.description?'<p class="desc">'+esc((LANG==='es'&&f.descriptionEs)||f.description)+'</p>':'')+
 '<div class="rooms">'+rooms.map(r=>{const w=r.windows[0];const tot=r.rent+r.gastos+r.cleaning;
@@ -216,6 +228,46 @@ document.querySelectorAll('.c.free[data-f]').forEach(x=>x.onclick=()=>openReq(x.
 if(hm){const th=document.querySelector('.cal th.hl');if(th)th.scrollIntoView({inline:'center',block:'nearest'})}}
 function setView(v){VIEW=v;document.getElementById('vl').classList.toggle('on',v==='list');document.getElementById('vc').classList.toggle('on',v==='cal');render()}
 document.getElementById('vl').onclick=()=>setView('list');document.getElementById('vc').onclick=()=>setView('cal');
+/* ---- Map of the flats (OpenStreetMap + Leaflet). SHOW_MAP=false gives back the page without the map. ---- */
+const SHOW_MAP=true;
+const TT=(en,es)=>LANG==='es'?es:en;
+const LANDMARKS=[[39.4813,-0.3436,'🎓 UPV'],[39.4778,-0.3437,'🎓 UV Tarongers'],[39.4786,-0.3637,'🎓 UV Blasco Ibáñez'],[39.4755,-0.3262,TT('🏖 Malvarrosa beach','🏖 Playa de la Malvarrosa')]];
+let MAP=null,MAPL=null,MAPOPEN=false,MAPLOAD=null;
+const geoOf=f=>{const g=String(f.geo||'').match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);return g?[+g[1],+g[2]]:null};
+function loadLeaflet(){if(MAPLOAD)return MAPLOAD;MAPLOAD=new Promise((ok,ko)=>{const put=(t,a)=>{const e=document.createElement(t);Object.assign(e,a);document.head.appendChild(e);return e};
+ put('link',{rel:'stylesheet',href:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'});put('link',{rel:'stylesheet',href:'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css'});
+ const a=put('script',{src:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'});a.onerror=ko;
+ a.onload=()=>{const b=put('script',{src:'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js'});b.onload=ok;b.onerror=ok}});return MAPLOAD}
+function updateMap(){if(!SHOW_MAP||!D)return;const wrap=document.getElementById('mapwrap');if(!wrap)return;if(!D.flats.some(geoOf)){wrap.style.display='none';const v=document.getElementById('vm');if(v)v.style.display='none';return}wrap.classList.toggle('open',MAPOPEN);
+ if(window.innerWidth<=700&&!MAPOPEN)return;
+ loadLeaflet().then(()=>{
+  if(!MAP){MAP=L.map('elvmap',{scrollWheelZoom:false});L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(MAP);
+   LANDMARKS.forEach(([a,b,t])=>L.marker([a,b],{icon:L.divIcon({className:'',html:'<span class="lm">'+esc(t)+'</span>',iconSize:null}),interactive:false,keyboard:false}).addTo(MAP));MAP._fit=true}
+  MAP.invalidateSize();if(MAPL)MAP.removeLayer(MAPL);
+  MAPL=L.markerClusterGroup?L.markerClusterGroup({maxClusterRadius:28,showCoverageOnHover:false,spiderfyOnMaxZoom:true,
+   iconCreateFunction:c=>L.divIcon({className:'',html:'<span class="pin cl">'+c.getChildCount()+' '+TT('flats','pisos')+'</span>',iconSize:null})}):L.layerGroup();
+  const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0,pts=[];
+  D.flats.filter(flatOk).forEach(f=>{const g=geoOf(f);if(!g)return;const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return;
+   const min=Math.min(...rooms.map(r=>r.rent+r.gastos+r.cleaning));
+   const mk=L.marker(g,{icon:L.divIcon({className:'',html:'<span class="pin'+(f.gender==='Girls only'?' g':'')+'">'+min+' €</span>',iconSize:null}),title:f.name});
+   mk.bindPopup('<div class="pop"><b>'+esc(f.name)+'</b>'+(f.gender!=='Mixed'?' · '+esc(f.gender==='Girls only'?TT('Girls only','Solo chicas'):f.gender):'')+'<br>'+
+    rooms.length+' '+TT(rooms.length===1?'room':'rooms',rooms.length===1?'habitación':'habitaciones')+' · '+TT('from','desde')+' '+min+' €/'+TT('month','mes')+
+    '<br><a href="#f-'+esc(f.id)+'" data-go="'+esc(f.id)+'">'+TT('See rooms','Ver habitaciones')+'</a></div>');
+   MAPL.addLayer(mk);pts.push(g)});
+  MAP.addLayer(MAPL);
+  if(MAP._fit&&pts.length){const core=pts.filter(g=>g[1]>-0.37);MAP.fitBounds(core.length?core:pts,{padding:[24,24],maxZoom:16});MAP._fit=false}
+ }).catch(()=>{wrap.style.display='none'})}
+if(SHOW_MAP){
+ const w=document.createElement('div');w.className='mapwrap';w.id='mapwrap';
+ w.innerHTML='<div class="mapcard"><div class="maphead">Where are the flats? <span>Click a flat to see its rooms</span></div><div id="elvmap"></div></div>';
+ document.getElementById('list').before(w);
+ const vb=document.createElement('button');vb.type='button';vb.id='vm';vb.textContent='🗺 Map';document.querySelector('.views').appendChild(vb);
+ vb.onclick=()=>{MAPOPEN=!MAPOPEN;vb.classList.toggle('on',MAPOPEN);updateMap();if(MAPOPEN)w.scrollIntoView({behavior:'smooth',block:'start'})};
+ w.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(!a)return;e.preventDefault();if(VIEW!=='list')setView('list');
+  const el=document.getElementById('f-'+a.dataset.go);if(MAP)MAP.closePopup();if(el)el.scrollIntoView({behavior:'smooth',block:'start'})});
+ let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(updateMap,300)});
+ const renderNoMap=render;render=function(){renderNoMap();updateMap()};
+}
 function firstFree(f,rooms){let best=null;rooms.forEach(r=>{const w=r.windows[0];if(w&&(!best||w.from<best))best=w.from});return best||D.start}
 const flag=cc=>cc&&cc.length===2&&cc!=='XK'?String.fromCodePoint(...[...cc].map(ch=>127397+ch.charCodeAt(0))):'';
 const cname=cc=>{if(LANG==='es'&&cc){try{return new Intl.DisplayNames(['es'],{type:'region'}).of(cc)}catch(e){}}return (D.countries||{})[cc]||''};
