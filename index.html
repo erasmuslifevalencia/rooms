@@ -113,12 +113,12 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" required></label></div>
 <div class="row2"><label>Nationality<input name="nationality" required></label><label>ID document<select name="idType"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label></div>
 <label>ID number<input name="idNumber" required></label>
-<label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date, questions…"></textarea></label>
+<label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date…"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off">
 <label class="chk"><input type="checkbox" name="accept"> <span>I want to book this room. I understand it is confirmed only once I sign the contract and pay the deposit. My data is used only for this booking.</span></label>
 <div class="cf-turnstile" data-sitekey="0x4AAAAAAFq9sMjm174kYGTv" data-theme="light" data-size="flexible"></div>
 <p class="err" id="ferr"></p>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="x" id="cl">Cancel</button><button type="submit" id="send">Send request</button></div>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="x" id="cl">Cancel</button><button type="submit" id="send">Book this room</button></div>
 </form></dialog>
 <script>
 /* ---- Language: EN / ES (auto from the browser, remembered) ---- */
@@ -144,12 +144,12 @@ const ES_EXACT={
  'Move-in':'Entrada','Move-out (last month)':'Salida (último mes)','Full name (as on your ID)':'Nombre completo (como en tu documento)',
  'I am':'Soy','Choose…':'Elige…','a girl':'una chica','a boy':'un chico','Phone / WhatsApp':'Teléfono / WhatsApp','Nationality':'Nacionalidad',
  'ID document':'Documento de identidad','Passport':'Pasaporte','National ID card':'Documento nacional de identidad (DNI)','ID number':'Número de documento',
- 'Message (optional)':'Mensaje (opcional)','University, arrival date, questions…':'Universidad, fecha de llegada, preguntas…',
+ 'Message (optional)':'Mensaje (opcional)','University, arrival date…':'Universidad, fecha de llegada…',
  'I want to book this room. I understand it is confirmed only once I sign the contract and pay the deposit. My data is used only for this booking.':'Quiero reservar esta habitación. Entiendo que solo queda confirmada cuando firmo el contrato y pago la fianza. Mis datos solo se usan para esta reserva.',
- 'Cancel':'Cancelar','Send request':'Enviar solicitud','Sending…':'Enviando…','Close':'Cerrar',
+ 'Cancel':'Cancelar','Book this room':'Reservar esta habitación','Sending…':'Enviando…','Close':'Cerrar',
  'Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.':'Algo ha fallado. Inténtalo de nuevo o escríbenos por WhatsApp +34 695 01 48 94.',
  'Request sent ✓':'Solicitud enviada ✓',
- 'Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).':'¡Gracias! Te hemos enviado un e-mail de confirmación. Nuestro equipo te contestará pronto con los siguientes pasos (revisa tu correo en los próximos días).',
+ 'Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h. You will then have 72 h to sign it.':'¡Gracias! Te hemos enviado un e-mail de confirmación. Revisamos tu solicitud y te mandamos el contrato por e-mail en 24–48 h. Después tendrás 72 h para firmarlo.',
  'Important:':'Importante:','our e-mails sometimes land in the':'a veces nuestros e-mails llegan a la','spam / junk folder':'carpeta de spam / correo no deseado',
  '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
  'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
@@ -298,7 +298,7 @@ ft.value=(ft2.value&&ends.includes(ft2.value)&&m===fm.value)?ft2.value:ends.find
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
 document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
-post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
-ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
-.catch(()=>{b.disabled=false;b.textContent='Send request';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.'})};
+post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Book this room';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
+ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. We check your request and send you the contract by e-mail within 24–48 h. You will then have 72 h to sign it.</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
+.catch(()=>{b.disabled=false;b.textContent='Book this room';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.'})};
 </script><a class="wa-float" href="https://wa.me/34695014894" target="_blank" rel="noopener">💬 WhatsApp us</a></body></html>
