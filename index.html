@@ -103,7 +103,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Up to 400 €/month</option><option value="450">Up to 450 €/month</option><option value="500">Up to 500 €/month</option><option value="550">Up to 550 €/month</option></select>
 <span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>List</button><button type="button" id="vc"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar</button></span></div></div>
 <main id="list"><p class="none" id="loading">Loading the rooms…</p></main>
-<footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 634 300 402.</footer>
+<footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 695 01 48 94.</footer>
 <dialog id="dlg"><form class="dlg" id="frm" method="dialog">
 <h3 id="dt"></h3><p class="sub" id="dd"></p>
 <p class="qnote">💬 <span>Just have questions? No need to send a request:</span> <a href="https://wa.me/34695014894" target="_blank" rel="noopener">ask us on WhatsApp</a>. <span>Only send a request if you are ready to book the room.</span></p>
@@ -123,19 +123,19 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <script>
 /* ---- Language: EN / ES (auto from the browser, remembered) ---- */
 const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='es'||q==='en'){localStorage.setItem('elv_lang',q);return q}const s=localStorage.getItem('elv_lang');if(s==='es'||s==='en')return s}catch(e){}return /^es\b/i.test(navigator.language||'')?'es':'en'})();
-const WA_TXT='WhatsApp +34 634 300 402';
+const WA_TXT='WhatsApp +34 695 01 48 94';
 const ES_EXACT={
  'Rooms available in Valencia':'Habitaciones disponibles en Valencia',
  'Student rooms in shared flats · live availability · request online in 2 minutes':'Habitaciones para estudiantes en pisos compartidos · disponibilidad en directo · solicitud online en 2 minutos',
  'Loading the rooms…':'Cargando las habitaciones…',
- 'Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 634 300 402.':'Precios por mes. Los gastos (internet, luz, agua, gas) son un anticipo que se ajusta con las facturas reales al final del contrato. La fianza se paga por transferencia y se devuelve en un plazo de 2 meses tras el fin del contrato. Dudas: WhatsApp +34 634 300 402.',
- 'The rooms could not be loaded. Please reload the page, or ask us on WhatsApp +34 634 300 402.':'No se han podido cargar las habitaciones. Recarga la página o escríbenos por WhatsApp +34 634 300 402.',
+ 'Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 695 01 48 94.':'Precios por mes. Los gastos (internet, luz, agua, gas) son un anticipo que se ajusta con las facturas reales al final del contrato. La fianza se paga por transferencia y se devuelve en un plazo de 2 meses tras el fin del contrato. Dudas: WhatsApp +34 695 01 48 94.',
+ 'The rooms could not be loaded. Please reload the page, or ask us on WhatsApp +34 695 01 48 94.':'No se han podido cargar las habitaciones. Recarga la página o escríbenos por WhatsApp +34 695 01 48 94.',
  'Any move-in month':'Cualquier mes de entrada','Until any month':'Hasta cualquier mes','Until…':'Hasta…',
  'All flats':'Todos los pisos','Mixed':'Mixto','Girls only':'Solo chicas','Boys only':'Solo chicos','Flat type':'Tipo de piso','Flat':'Piso',
  'Any price':'Cualquier precio','List':'Lista','Calendar':'Calendario',
  'Move-in month':'Mes de entrada','Move-out month':'Mes de salida','Max price':'Precio máximo',
  'Request this room':'Solicitar esta habitación',
- 'No room matches these filters. Try other months, or ask us on WhatsApp +34 634 300 402.':'Ninguna habitación coincide con estos filtros. Prueba otros meses o escríbenos por WhatsApp +34 634 300 402.',
+ 'No room matches these filters. Try other months, or ask us on WhatsApp +34 695 01 48 94.':'Ninguna habitación coincide con estos filtros. Prueba otros meses o escríbenos por WhatsApp +34 695 01 48 94.',
  'No room matches these filters.':'Ninguna habitación coincide con estos filtros.',
  'Overview of every room':'Vista general de todas las habitaciones',
  'free, stay too short':'libre, estancia demasiado corta',
@@ -147,7 +147,7 @@ const ES_EXACT={
  'Message (optional)':'Mensaje (opcional)','University, arrival date, questions…':'Universidad, fecha de llegada, preguntas…',
  'I understand this is a request: the room is confirmed only after the team accepts it, I sign the contract and the deposit is received. My data is used only to manage this booking.':'Entiendo que es una solicitud: la habitación solo queda confirmada cuando el equipo la acepta, firmo el contrato y se recibe la fianza. Mis datos solo se usan para gestionar esta reserva.',
  'Cancel':'Cancelar','Send request':'Enviar solicitud','Sending…':'Enviando…','Close':'Cerrar',
- 'Something went wrong. Please try again or contact us on WhatsApp +34 634 300 402.':'Algo ha fallado. Inténtalo de nuevo o escríbenos por WhatsApp +34 634 300 402.',
+ 'Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.':'Algo ha fallado. Inténtalo de nuevo o escríbenos por WhatsApp +34 695 01 48 94.',
  'Request sent ✓':'Solicitud enviada ✓',
  'Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).':'¡Gracias! Te hemos enviado un e-mail de confirmación. Nuestro equipo te contestará pronto con los siguientes pasos (revisa tu correo en los próximos días).',
  'Important:':'Importante:','our e-mails sometimes land in the':'a veces nuestros e-mails llegan a la','spam / junk folder':'carpeta de spam / correo no deseado',
@@ -180,7 +180,7 @@ function post(body){return fetch(API,{method:'POST',body:JSON.stringify(body)}).
 let D=null;
 function start(){const s=document.createElement('script');s.textContent=document.getElementById('app').textContent;document.body.append(s)}
 fetch(API+'?p=json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.json()}).then(d=>{D=d;start()})
-.catch(()=>{document.getElementById('list').innerHTML='<p class="none">The rooms could not be loaded. Please reload the page, or ask us on WhatsApp +34 634 300 402.</p>'});
+.catch(()=>{document.getElementById('list').innerHTML='<p class="none">The rooms could not be loaded. Please reload the page, or ask us on WhatsApp +34 695 01 48 94.</p>'});
 </script>
 <script type="text/plain" id="app">
 const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -212,7 +212,7 @@ return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span 
 '<div class="meta"><span>'+r.rent+' € rent</span><span>+ '+r.gastos+' € utilities</span>'+(r.cleaning?'<span>+ '+r.cleaning+' € cleaning</span>':'')+'<span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
 (r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,400))+'" alt="">').join('')+'</div>':'')+
 '<div style="grid-column:1/-1"><button onclick="openReq(\''+f.id+'\',\''+esc(r.room)+'\')">Request this room</button></div></div>'}).join('')+'</div></section>'}).join('');
-document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try other months, or ask us on WhatsApp +34 634 300 402.</p>';
+document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try other months, or ask us on WhatsApp +34 695 01 48 94.</p>';
 document.getElementById('cnt').textContent=n+' room'+(n===1?'':'s');}
 function renderCal(){const p=+document.getElementById('fp').value||0,hm=fm.value,he=ft2.value||hm;let n=0;
 let h='<div class="legend"><b style="color:#1d1b18">Overview of every room</b><span class="c free">free</span><span class="c F">♀ girl</span><span class="c M">♂ boy</span><span class="c u">taken</span><span class="c na">free, stay too short</span><span>Click a green month to request that room.</span></div>'+
@@ -300,5 +300,5 @@ document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new Fo
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
 ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
-.catch(()=>{b.disabled=false;b.textContent='Send request';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 634 300 402.'})};
+.catch(()=>{b.disabled=false;b.textContent='Send request';if(window.turnstile)turnstile.reset();document.getElementById('ferr').textContent='Something went wrong. Please try again or contact us on WhatsApp +34 695 01 48 94.'})};
 </script><a class="wa-float" href="https://wa.me/34695014894" target="_blank" rel="noopener">💬 WhatsApp us</a></body></html>
