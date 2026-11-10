@@ -76,6 +76,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 .badge{background:var(--plum2);color:var(--plum)}.badge.g{background:var(--plum2);color:var(--plum)}
 .room{border-radius:14px}.room .p{font-size:24px;font-weight:800;color:var(--deep)}
 .views button.on{background:var(--plum2);color:var(--plum)}
+.views button{display:inline-flex;align-items:center;gap:6px}.views .ic{width:15px;height:15px;flex:none}
 .cal th.hl{background:#fde8d8}
 .top .act a.langsw{background:#f47a24;border-color:#f47a24}
 .wa-float{position:fixed;right:16px;bottom:16px;background:#25d366;color:#fff;border-radius:999px;padding:11px 16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:9;font-size:14px;text-decoration:none}
@@ -99,7 +100,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <select id="fm" aria-label="Move-in month"></select><select id="ft2" aria-label="Move-out month" disabled></select>
 <select id="fg" aria-label="Flat type"><option value="">All flats</option><option>Mixed</option><option>Girls only</option></select>
 <select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Up to 400 €/month</option><option value="450">Up to 450 €/month</option><option value="500">Up to 500 €/month</option><option value="550">Up to 550 €/month</option></select>
-<span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on">List</button><button type="button" id="vc">Calendar</button></span></div></div>
+<span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>List</button><button type="button" id="vc"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar</button></span></div></div>
 <main id="list"><p class="none" id="loading">Loading the rooms…</p></main>
 <footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 634 300 402.</footer>
 <dialog id="dlg"><form class="dlg" id="frm" method="dialog">
@@ -151,7 +152,7 @@ const ES_EXACT={
  '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
  'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
  'Please complete the "I am not a robot" check above the button, then send again.':'Completa la verificación «No soy un robot» encima del botón y vuelve a enviar.',
- 'Portfolio':'Portafolio','Photo albums':'Álbumes de fotos','Where are the flats?':'¿Dónde están los pisos?','Click a flat to see its rooms':'Haz clic en un piso para ver sus habitaciones','🗺 Map':'🗺 Mapa','Hide the map':'Ocultar el mapa','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
+ 'Portfolio':'Portafolio','Photo albums':'Álbumes de fotos','Where are the flats?':'¿Dónde están los pisos?','Click a flat to see its rooms':'Haz clic en un piso para ver sus habitaciones','Map':'Mapa','Hide the map':'Ocultar el mapa','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
 };
 const ES_RULES=[
  [/^From ([A-Z][a-z]{2} \d{4})$/,'Desde $1'],[/^Until ([A-Z][a-z]{2} \d{4})$/,'Hasta $1'],
@@ -262,7 +263,7 @@ if(SHOW_MAP){
  const w=document.createElement('div');w.className='mapwrap';w.id='mapwrap';
  w.innerHTML='<div class="mapcard"><div class="maphead">Where are the flats? <span>Click a flat to see its rooms</span><button type="button" class="mapx" title="Hide the map" aria-label="Hide the map">✕</button></div><div id="elvmap"></div></div>';
  document.getElementById('list').before(w);
- const vb=document.createElement('button');vb.type='button';vb.id='vm';vb.textContent='🗺 Map';document.querySelector('.views').appendChild(vb);
+ const vb=document.createElement('button');vb.type='button';vb.id='vm';vb.innerHTML='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>Map';document.querySelector('.views').appendChild(vb);
  vb.classList.toggle('on',MAPOPEN);
  const toggleMap=open=>{MAPOPEN=open;vb.classList.toggle('on',MAPOPEN);try{localStorage.setItem('elv_map',MAPOPEN?'1':'0')}catch(e){}updateMap();if(MAPOPEN)w.scrollIntoView({behavior:'smooth',block:'start'})};
  vb.onclick=()=>toggleMap(!MAPOPEN);w.querySelector('.mapx').onclick=()=>toggleMap(false);
