@@ -82,6 +82,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 .wa-float{position:fixed;right:16px;bottom:16px;background:#25d366;color:#fff;border-radius:999px;padding:11px 16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:9;font-size:14px;text-decoration:none}
 @media(max-width:700px){.filters{position:static}}
 @media(max-width:600px){.top img{height:44px}.top h1{font-size:20px}.wa-float{padding:10px 14px;font-size:13px}}
+.qnote{background:#fff7ef;border:1px solid #f9d3b3;border-radius:10px;padding:8px 10px;margin:0 0 10px;font-size:13px;line-height:1.45}.qnote a{color:var(--accent);font-weight:700}
 .mapwrap{max-width:1100px;margin:14px auto 0;padding:0 16px}
 .mapcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .maphead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;font-weight:600;color:var(--deep)}
@@ -105,6 +106,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 634 300 402.</footer>
 <dialog id="dlg"><form class="dlg" id="frm" method="dialog">
 <h3 id="dt"></h3><p class="sub" id="dd"></p>
+<p class="qnote">💬 <span>Just have questions? No need to send a request:</span> <a href="https://wa.me/34634300402" target="_blank" rel="noopener">ask us on WhatsApp</a>. <span>A request means you are ready to sign the contract within 72 h.</span></p>
 <div class="row2"><label>Move-in<select name="from" id="ffrom" required></select></label><label>Move-out (last month)<select name="to" id="fto" required></select></label></div>
 <div id="dmix"></div>
 <div class="row2"><label>Full name (as on your ID)<input name="name" required maxlength="80"></label><label>I am<select name="gender" id="fgender" required><option value="">Choose…</option><option value="Girl">a girl</option><option value="Boy">a boy</option></select></label></div>
@@ -113,6 +115,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <label>ID number<input name="idNumber" required></label>
 <label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date, questions…"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off">
+<label class="chk"><input type="checkbox" name="ready"> <span>I am ready to book this room and to sign the contract within 72 h.</span></label>
 <label class="chk"><input type="checkbox" name="accept"> <span>I understand this is a request: the room is confirmed only after the team accepts it, I sign the contract and the deposit is received. My data is used only to manage this booking.</span></label>
 <div class="cf-turnstile" data-sitekey="0x4AAAAAAFq9sMjm174kYGTv" data-theme="light" data-size="flexible"></div>
 <p class="err" id="ferr"></p>
@@ -152,7 +155,7 @@ const ES_EXACT={
  '. Please check it, and if you find us there, mark the e-mail as':'. Revísala y, si nos encuentras ahí, marca el e-mail como','“Not spam”':'“No es spam”',
  'so the next ones (contract, deposit) arrive in your inbox.':'para que los siguientes (contrato, fianza) lleguen a tu bandeja de entrada.',
  'Please complete the "I am not a robot" check above the button, then send again.':'Completa la verificación «No soy un robot» encima del botón y vuelve a enviar.',
- 'Portfolio':'Portafolio','Photo albums':'Álbumes de fotos','Where are the flats?':'¿Dónde están los pisos?','Click a flat to see its rooms':'Haz clic en un piso para ver sus habitaciones','Map':'Mapa','Hide the map':'Ocultar el mapa','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
+ 'Portfolio':'Portafolio','Just have questions? No need to send a request:':'¿Solo tienes preguntas? No hace falta enviar una solicitud:','ask us on WhatsApp':'pregúntanos por WhatsApp','A request means you are ready to sign the contract within 72 h.':'Una solicitud significa que estás listo para firmar el contrato en 72 h.','I am ready to book this room and to sign the contract within 72 h.':'Estoy listo para reservar esta habitación y firmar el contrato en 72 h.','Please confirm you are ready to book this room (or ask us your questions on WhatsApp).':'Confirma que estás listo para reservar esta habitación (o haznos tus preguntas por WhatsApp).','Photo albums':'Álbumes de fotos','Where are the flats?':'¿Dónde están los pisos?','Click a flat to see its rooms':'Haz clic en un piso para ver sus habitaciones','Map':'Mapa','Hide the map':'Ocultar el mapa','💬 WhatsApp us':'💬 Escríbenos por WhatsApp'
 };
 const ES_RULES=[
  [/^From ([A-Z][a-z]{2} \d{4})$/,'Desde $1'],[/^Until ([A-Z][a-z]{2} \d{4})$/,'Hasta $1'],
@@ -294,7 +297,7 @@ function fillTo(){document.getElementById('dmix').innerHTML=mixHtml(cur.f,ff.val
 for(let e=add(m,r.minMonths-1);e<=last;e=add(e,1))ends.push(e);ft.innerHTML=ends.map(e=>'<option value="'+e+'">'+lab(e)+'</option>').join('');
 ft.value=(ft2.value&&ends.includes(ft2.value)&&m===fm.value)?ft2.value:ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
-document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');
+document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;if(!fd.get('ready')){document.getElementById('ferr').textContent=trText('Please confirm you are ready to book this room (or ask us your questions on WhatsApp).');return}
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Send request';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
 ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! We sent you a confirmation e-mail. Our team will get back to you soon with the next steps (please check your emails in the next days).</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
