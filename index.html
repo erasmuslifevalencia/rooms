@@ -122,6 +122,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 </form></dialog>
 <script>
 /* ---- Language: EN / ES (auto from the browser, remembered) ---- */
+const BY=(()=>{try{const q=(new URLSearchParams(location.search).get('by')||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,20);if(q){localStorage.setItem('elv_by',JSON.stringify({k:q,t:Date.now()}));return q}const s=JSON.parse(localStorage.getItem('elv_by')||'null');if(s&&Date.now()-s.t<30*864e5)return s.k}catch(e){}return ''})();
 const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='es'||q==='en'){localStorage.setItem('elv_lang',q);return q}const s=localStorage.getItem('elv_lang');if(s==='es'||s==='en')return s}catch(e){}return /^es\b/i.test(navigator.language||'')?'es':'en'})();
 const WA_TXT='WhatsApp +34 695 01 48 94';
 const ES_EXACT={
@@ -296,7 +297,7 @@ function fillTo(){document.getElementById('dmix').innerHTML=mixHtml(cur.f,ff.val
 for(let e=add(m,r.minMonths-1);e<=last;e=add(e,1))ends.push(e);ft.innerHTML=ends.map(e=>'<option value="'+e+'">'+lab(e)+'</option>').join('');
 ft.value=(ft2.value&&ends.includes(ft2.value)&&m===fm.value)?ft2.value:ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
-document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;
+document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;o.by=BY;
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Book this room';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
 ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! Our team will review your request and send you the contract by e-mail within 24–48 h. Any doubt? WhatsApp +34 695 01 48 94</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})

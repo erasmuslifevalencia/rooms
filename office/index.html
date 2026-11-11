@@ -14,6 +14,7 @@ nav button.on{background:var(--ink);color:#fff}nav .n{display:inline-block;min-w
 main{max-width:1200px;margin:0 auto;padding:12px 16px 40px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
 input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);min-width:0}
+.lockw{font-size:13px;color:#6b645c;background:#f1eee9;border-radius:8px;padding:6px 10px;align-self:flex-start}
 .dupw{grid-column:1/-1;background:#fff4e5;border:1px solid #f3c27a;border-radius:8px;padding:5px 9px;font-size:13px;color:#7a4a00}
 .dupbar{background:#fff4e5;border:1px solid #f3c27a;border-radius:12px;padding:10px 12px;margin:0 0 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:6px 14px}
@@ -142,6 +143,8 @@ const phKey=p=>String(p||'').replace(/[^0-9]/g,'').slice(-9);
 function dupsOf(b){const em=String(b.email||'').trim().toLowerCase(),ph=phKey(b.phone);if(!em&&ph.length<8)return [];
  return D.bookings.filter(x=>x.id!==b.id&&OPEN_ST.includes(x.status)&&((em&&String(x.email||'').trim().toLowerCase()===em)||(ph.length>=8&&phKey(x.phone)===ph)))}
 let DUPASK=null;
+const ownerOf=b=>{const rb=String(b.rentedBy||'').trim().toLowerCase();return (D.staff||[]).find(n=>n.toLowerCase()===rb)||''};
+const lockedFor=b=>{const o=ownerOf(b),me=D.me||{};return o&&!me.admin&&o!==me.name?o:''};
 function card(b){const st=b.status;const idl=isIdl(b);let acts=idl?[]:(ACT[st]||[]);if(st==='EXPIRED'&&b.depositProofUrl)acts=[['paid','Deposit received','g']].concat(acts);
  const links=[b.contractPdfUrl&&'<a target="_blank" href="'+esc(b.contractPdfUrl)+'">contract PDF</a>',b.contractEnPdfUrl&&'<a target="_blank" href="'+esc(b.contractEnPdfUrl)+'">EN</a>',b.signedFileUrl&&b.signedFileUrl.split('\n').map((u,i)=>'<a target="_blank" href="'+esc(u)+'">signed '+(i+1)+'</a>').join(' '),
   b.depositProofUrl&&b.depositProofUrl.split('\n').map((u,i)=>'<a target="_blank" href="'+esc(u)+'" style="font-weight:700;color:#1f7a45">deposit proof '+(i+1)+'</a>').join(' ')].filter(Boolean).join(' · ');
@@ -153,7 +156,7 @@ function card(b){const st=b.status;const idl=isIdl(b);let acts=idl?[]:(ACT[st]||
  '<span>'+esc(b.rent)+'+'+esc(b.gastos)+(+b.cleaning?'+'+esc(b.cleaning):'')+' € · deposit '+esc(b.deposit)+' €</span>'+
  (b.holdUntil&&['CONTRACT SENT','SIGNED'].includes(st)?'<span style="color:#a15c00">held until '+esc(b.holdUntil)+'</span>':'')+(links?'<span>'+links+'</span>':'')+waLine(b)+'</div>'+
  (b.message?'<div class="meta">“'+esc(b.message)+'”</div>':'')+rbRow(b)+'<button class="tog" data-tog="'+esc(b.id)+'">history</button></div>'+
- '<div class="acts">'+waBtn(b)+(idl?'<button class="a p" data-cv="'+esc(b.id)+'" title="Booked on idealista: enter the student details to send the contract and follow the normal process">Enter student details</button>':'')+acts.map(([a,t,c])=>'<button class="a '+c+'" title="'+esc(HELP[a])+'" data-id="'+esc(b.id)+'" data-a="'+a+'">'+t+'</button>').join('')+'</div>'+
+ '<div class="acts">'+(lockedFor(b)?'<span class="lockw">🔒 Booking of '+esc(lockedFor(b))+'</span>':waBtn(b)+(idl?'<button class="a p" data-cv="'+esc(b.id)+'" title="Booked on idealista: enter the student details to send the contract and follow the normal process">Enter student details</button>':'')+acts.map(([a,t,c])=>'<button class="a '+c+'" title="'+esc(HELP[a])+'" data-id="'+esc(b.id)+'" data-a="'+a+'">'+t+'</button>').join(''))+'</div>'+
  (st==='REQUEST'?'<div class="rjw" id="rj'+esc(b.id)+'" style="display:none;grid-column:1/-1"><textarea rows="2" maxlength="2000" style="width:100%" placeholder="Optional message to the student, added to the rejection e-mail (leave empty for the standard e-mail)"></textarea></div>':'')+
  (OPEN_ST.includes(st)?(d=>d.length?'<div class="dupw">⚠ Same student also has '+(d.length===1?'another request':d.length+' other requests')+' in progress: '+d.map(x=>esc(flatName(x.flatId))+' R'+esc(x.room)+' ('+esc(x.status)+', '+esc(x.id)+')').join(' · ')+'. Book only one room per student, cancel the others.</div>':'')(dupsOf(b)):'')+
  '<div class="notes">'+esc(b.notes||'—')+'</div></div>'}
@@ -252,8 +255,8 @@ function kpis(){const c=a=>D.bookings.filter(b=>a.includes(b.status)).length;con
  const conf=D.bookings.filter(b=>['CONFIRMED','DEPOSIT PAID'].includes(b.status)&&inMonth(b.depositPaidAt)).length;
  return '<div class="kgrid">'+[['New requests',c(['REQUEST'])],['Waiting for signature',c(['ACCEPTED','CONTRACT SENT'])],['Deposit to check',c(['SIGNED'])],['Confirmed this month',conf]].map(([l,v])=>'<div class="k"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>').join('')+'</div>'}
 
-function rbRow(b){if(/^Office block/.test(b.source||''))return '';return '<div class="rb">Rented by <input class="rbi" list="staff" placeholder="employee name" value="'+esc(b.rentedBy)+'" data-orig="'+esc(b.rentedBy)+'" id="rb'+esc(b.id)+'"><button class="a" data-rbs="'+esc(b.id)+'">Save</button></div>'}
-function staffNames(){return [...new Set(D.bookings.map(b=>(b.rentedBy||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
+function rbRow(b){if(/^Office block/.test(b.source||''))return '';if(lockedFor(b))return '<div class="rb">Rented by <b>'+esc(b.rentedBy)+'</b></div>';return '<div class="rb">Rented by <input class="rbi" list="staff" placeholder="employee name" value="'+esc(b.rentedBy)+'" data-orig="'+esc(b.rentedBy)+'" id="rb'+esc(b.id)+'"><button class="a" data-rbs="'+esc(b.id)+'">Save</button></div>'}
+function staffNames(){return [...new Set((D.staff||[]).concat(D.bookings.map(b=>(b.rentedBy||'').trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
 function bindRb(){document.querySelectorAll('[data-rbs]').forEach(x=>x.onclick=async()=>{const i=$('rb'+x.dataset.rbs);x.disabled=true;x.textContent='…';
  try{const r=await call('officeSetRentedBy',x.dataset.rbs,i.value);const b=D.bookings.find(y=>y.id===x.dataset.rbs);if(b)b.rentedBy=r.rentedBy;i.dataset.orig=r.rentedBy;toast(r.rentedBy?'Saved: rented by '+r.rentedBy:'Removed');x.textContent='Saved';setStaff()}
  catch(e){toast(e,true);x.textContent='Save'}x.disabled=false});
@@ -292,7 +295,7 @@ function renderNew(){if(CONV)return renderConv();const fo=D.flats.map(f=>'<optio
  '<div class="g2"><label>Full name (as on ID)<input id="nname"></label><label>Gender<select id="ngender"><option value="">Choose…</option><option>Girl</option><option>Boy</option></select></label></div>'+
  '<div class="g3"><label>E-mail<input id="nemail" type="email"></label><label>Phone / WhatsApp<input id="nphone"></label><label>Nationality<input id="nnat"></label></div>'+
  '<div class="g2"><label>ID document<select id="nidt"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label><label>ID number<input id="nid"></label></div>'+
- '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
+ '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name" value="'+esc((D.me&&!D.me.admin&&D.me.name)||'')+'"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
  '<div class="acts" style="justify-content:flex-start"><button class="a p" id="go-accept">Save + send contract now</button><button class="a" id="go-request">Save as request</button><button class="a" id="go-reserve">Only block the room (no e-mail)</button></div>'+
  '<p class="meta">“Send contract now” needs e-mail, gender, nationality and ID. “Only block” needs just the name and dates.</p></div>';
  $('nf').onchange=fillRooms;$('nr').onchange=fillFrom;$('nfrom').onchange=fillTo;
@@ -305,7 +308,7 @@ function renderConv(){const b=CONV,f=D.flats.find(x=>x.id===b.flatId)||{gender:'
  '<div class="g3"><label>E-mail<input id="nemail" type="email"></label><label>Phone / WhatsApp<input id="nphone"></label><label>Nationality<input id="nnat"></label></div>'+
  '<div class="g2"><label>ID document<select id="nidt"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label><label>ID number<input id="nid"></label></div>'+
  '<div class="g2"><label>Monthly rent on idealista (€) – goes in the contract<input id="nrent" type="number" min="100" max="3000" step="1" value="'+esc(r?r.rent:'')+'"></label><div class="meta" style="align-self:end">Utilities '+(r?r.gastos:'?')+' €'+(r&&r.cleaning?' + cleaning '+r.cleaning+' €':'')+' are added as usual. Deposit = 1 month (rent + utilities'+(r&&r.cleaning?' + cleaning':'')+').</div></div>'+
- '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name" value="'+esc(b.rentedBy||'')+'"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
+ '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name" value="'+esc(b.rentedBy||(D.me&&!D.me.admin&&D.me.name)||'')+'"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
  '<div class="acts" style="justify-content:flex-start"><button class="a p" id="cv-accept">Save + send contract now</button><button class="a" id="cv-save">Save details only (room stays held)</button><button class="a" id="cv-back">Back</button></div>'+
  '<p class="meta">The dates are the ones blocked from idealista (whole months). Then it is a normal booking: signature, deposit, Tenants tab, gastos.</p></div>';
  $('cv-back').onclick=()=>{CONV=null;TAB='todo';render()};
