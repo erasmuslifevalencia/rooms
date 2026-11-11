@@ -36,7 +36,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted)}.info{font-size:13p
 .warnbox{font-size:13px;background:#fff1d6;color:var(--warn);border-radius:9px;padding:8px 10px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;max-width:90vw;display:none;z-index:9}
 .toast.err{background:var(--bad)}
-.rb{display:flex;gap:6px;align-items:center;margin-top:4px;font-size:13px;color:var(--muted)}.rb input{padding:4px 8px;width:170px;font-size:13px}.rb button{padding:4px 10px}.rb b{color:var(--ink)}
+.rb{display:flex;gap:6px;align-items:center;margin-top:4px;font-size:13px;color:var(--muted)}.rb input,.rb select{padding:4px 8px;width:170px;font-size:13px}.rb button{padding:4px 10px}.rb b{color:var(--ink)}
 .bf{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}.bf .bfh{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);grid-template-columns:none}
 .brs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.br{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:13px;color:var(--ink);grid-template-columns:none;cursor:pointer}
 .br.busy{background:#f6e3e1;color:var(--bad);cursor:not-allowed}.br.sel{background:#e6f4ea;border-color:var(--ok)}
@@ -255,12 +255,15 @@ function kpis(){const c=a=>D.bookings.filter(b=>a.includes(b.status)).length;con
  const conf=D.bookings.filter(b=>['CONFIRMED','DEPOSIT PAID'].includes(b.status)&&inMonth(b.depositPaidAt)).length;
  return '<div class="kgrid">'+[['New requests',c(['REQUEST'])],['Waiting for signature',c(['ACCEPTED','CONTRACT SENT'])],['Deposit to check',c(['SIGNED'])],['Confirmed this month',conf]].map(([l,v])=>'<div class="k"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>').join('')+'</div>'}
 
-function rbRow(b){if(/^Office block/.test(b.source||''))return '';if(lockedFor(b))return '<div class="rb">Rented by <b>'+esc(b.rentedBy)+'</b></div>';return '<div class="rb">Rented by <input class="rbi" list="staff" placeholder="employee name" value="'+esc(b.rentedBy)+'" data-orig="'+esc(b.rentedBy)+'" id="rb'+esc(b.id)+'"><button class="a" data-rbs="'+esc(b.id)+'">Save</button></div>'}
+const RB_NAMES=['Corentin','Eszter','Office'];
+function rbOpts(cur){const me=D.me||{};let n=RB_NAMES.filter(x=>me.admin||!me.name||x===me.name||!(D.staff||[]).includes(x));cur=String(cur||'').trim();if(cur&&!n.includes(cur))n=n.concat([cur]);
+ return '<option value="">—</option>'+n.map(x=>'<option'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('')}
+function rbRow(b){if(/^Office block/.test(b.source||''))return '';if(lockedFor(b))return '<div class="rb">Rented by <b>'+esc(b.rentedBy)+'</b></div>';return '<div class="rb">Rented by <select class="rbi" data-orig="'+esc(b.rentedBy)+'" id="rb'+esc(b.id)+'">'+rbOpts(b.rentedBy)+'</select><button class="a" data-rbs="'+esc(b.id)+'">Save</button></div>'}
 function staffNames(){return [...new Set((D.staff||[]).concat(D.bookings.map(b=>(b.rentedBy||'').trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
 function bindRb(){document.querySelectorAll('[data-rbs]').forEach(x=>x.onclick=async()=>{const i=$('rb'+x.dataset.rbs);x.disabled=true;x.textContent='…';
  try{const r=await call('officeSetRentedBy',x.dataset.rbs,i.value);const b=D.bookings.find(y=>y.id===x.dataset.rbs);if(b)b.rentedBy=r.rentedBy;i.dataset.orig=r.rentedBy;toast(r.rentedBy?'Saved: rented by '+r.rentedBy:'Removed');x.textContent='Saved';setStaff()}
  catch(e){toast(e,true);x.textContent='Save'}x.disabled=false});
- document.querySelectorAll('.rbi').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();i.nextSibling.click()}})}
+ document.querySelectorAll('.rbi').forEach(i=>i.onchange=()=>i.nextSibling.click())}
 function setStaff(){let d=$('staff');if(!d){d=document.createElement('datalist');d.id='staff';document.body.appendChild(d)}d.innerHTML=staffNames().map(n=>'<option value="'+esc(n)+'">').join('')}
 function bindCards(){bindRb();bindWa();document.querySelectorAll('[data-cv]').forEach(x=>x.onclick=()=>{CONV=D.bookings.find(b=>b.id===x.dataset.cv);TAB='new';render()});document.querySelectorAll('[data-tog]').forEach(x=>x.onclick=()=>$('c'+x.dataset.tog).classList.toggle('open'));
  document.querySelectorAll('button.a[data-a]').forEach(x=>x.onclick=async()=>{
@@ -295,7 +298,7 @@ function renderNew(){if(CONV)return renderConv();const fo=D.flats.map(f=>'<optio
  '<div class="g2"><label>Full name (as on ID)<input id="nname"></label><label>Gender<select id="ngender"><option value="">Choose…</option><option>Girl</option><option>Boy</option></select></label></div>'+
  '<div class="g3"><label>E-mail<input id="nemail" type="email"></label><label>Phone / WhatsApp<input id="nphone"></label><label>Nationality<input id="nnat"></label></div>'+
  '<div class="g2"><label>ID document<select id="nidt"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label><label>ID number<input id="nid"></label></div>'+
- '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name" value="'+esc((D.me&&!D.me.admin&&D.me.name)||'')+'"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
+ '<div class="g2"><label>Rented by (employee)<select id="nrb">'+rbOpts((D.me&&!D.me.admin&&D.me.name)||'')+'</select></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
  '<div class="acts" style="justify-content:flex-start"><button class="a p" id="go-accept">Save + send contract now</button><button class="a" id="go-request">Save as request</button><button class="a" id="go-reserve">Only block the room (no e-mail)</button></div>'+
  '<p class="meta">“Send contract now” needs e-mail, gender, nationality and ID. “Only block” needs just the name and dates.</p></div>';
  $('nf').onchange=fillRooms;$('nr').onchange=fillFrom;$('nfrom').onchange=fillTo;
@@ -308,7 +311,7 @@ function renderConv(){const b=CONV,f=D.flats.find(x=>x.id===b.flatId)||{gender:'
  '<div class="g3"><label>E-mail<input id="nemail" type="email"></label><label>Phone / WhatsApp<input id="nphone"></label><label>Nationality<input id="nnat"></label></div>'+
  '<div class="g2"><label>ID document<select id="nidt"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label><label>ID number<input id="nid"></label></div>'+
  '<div class="g2"><label>Monthly rent on idealista (€) – goes in the contract<input id="nrent" type="number" min="100" max="3000" step="1" value="'+esc(r?r.rent:'')+'"></label><div class="meta" style="align-self:end">Utilities '+(r?r.gastos:'?')+' €'+(r&&r.cleaning?' + cleaning '+r.cleaning+' €':'')+' are added as usual. Deposit = 1 month (rent + utilities'+(r&&r.cleaning?' + cleaning':'')+').</div></div>'+
- '<div class="g2"><label>Rented by (employee)<input id="nrb" list="staff" placeholder="employee name" value="'+esc(b.rentedBy||(D.me&&!D.me.admin&&D.me.name)||'')+'"></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
+ '<div class="g2"><label>Rented by (employee)<select id="nrb">'+rbOpts(b.rentedBy||(D.me&&!D.me.admin&&D.me.name)||'')+'</select></label><label>Note (optional)<textarea id="nmsg" rows="1"></textarea></label></div>'+
  '<div class="acts" style="justify-content:flex-start"><button class="a p" id="cv-accept">Save + send contract now</button><button class="a" id="cv-save">Save details only (room stays held)</button><button class="a" id="cv-back">Back</button></div>'+
  '<p class="meta">The dates are the ones blocked from idealista (whole months). Then it is a normal booking: signature, deposit, Tenants tab, gastos.</p></div>';
  $('cv-back').onclick=()=>{CONV=null;TAB='todo';render()};
