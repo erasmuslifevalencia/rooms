@@ -1,0 +1,35 @@
+# Builds sign/index.html and deposit/index.html (GitHub copies of the student contract / proof-of-payment page, no Google banner).
+# Usage: python3 tools/build_student.py .   The pages load the page from ELV Rooms (?k=…&raw=1) and call doPost action "student".
+import sys
+API='https://script.google.com/macros/s/AKfycbwIilV5eP7YbUDPOUUo5BVNXXhVUDSKIpZI_3bSQZbJuuhJ-P4Vn1B_L1ShnX-PJmSPqw/exec'
+T=r'''<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>__TITLE__ – Erasmus Life Valencia</title>
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#4f0a2f">
+<link rel="icon" href="../icon-192.png"><link rel="apple-touch-icon" href="../icon-180.png">
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f7f5f1;color:#1d1b18;font:15px/1.5 Inter,system-ui,sans-serif;text-align:center;padding:0 16px}</style>
+</head><body><p id="ld">Loading…</p>
+<script>
+/* GitHub copy of the student page "__TITLE__" (no Google banner).
+   It loads the page from the ELV Rooms web app (?k=…&raw=1), so it is always the same version as the Google one,
+   and replaces google.script.run with POST calls (doPost action "student" -> studentCall_ in Code.gs). */
+const ELV_API='__API__';
+const K=new URLSearchParams(location.search).get('k')||'';
+const SHIM='<script>window.ELV_API='+JSON.stringify(ELV_API)+';('+function(){
+ window.google={script:{run:new Proxy({},{get(_,k0){const st={ok(){},ko(){}};const runner=new Proxy({},{get(_,k){
+  if(k==='withSuccessHandler')return f=>{st.ok=f;return runner};if(k==='withFailureHandler')return f=>{st.ko=f;return runner};
+  return(...a)=>{fetch(window.ELV_API,{method:'POST',body:JSON.stringify({action:'student',fn:k,args:a})})
+   .then(r=>{if(!r.ok)throw new Error('Network error ('+r.status+'), try again.');return r.json()})
+   .then(r=>{if(r&&r.ok)st.ok(r.result);else st.ko(new Error((r&&r.error)||'Something went wrong.'))},e=>st.ko(e))}}});return runner[k0]}})}};
+}+')();<\/script>';
+const HEAD='<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">'+
+ '<title>__TITLE__ – Erasmus Life Valencia</title><link rel="icon" href="../icon-192.png"><link rel="apple-touch-icon" href="../icon-180.png">';
+fetch(ELV_API+'?k='+encodeURIComponent(K)+'&raw=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()}).then(h=>{
+ if(!/<head>/i.test(h))throw new Error('bad page');
+ h=h.replace(/<head>/i,'<head>'+HEAD+SHIM);
+ document.open();document.write(h);document.close();
+}).catch(()=>{document.getElementById('ld').textContent='The page could not be loaded. Check your connection and reload the page, or contact us on WhatsApp +34 695 01 48 94.'});
+</script></body></html>
+'''
+for d,t in (('sign','Sign your contract'),('deposit','Proof of payment')):
+    import os; os.makedirs(sys.argv[1]+'/'+d,exist_ok=True)
+    open(sys.argv[1]+'/'+d+'/index.html','w').write(T.replace('__API__',API).replace('__TITLE__',t))

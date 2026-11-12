@@ -18,3 +18,9 @@ Public page with the rooms available in our student flats in Valencia, live avai
 The page is generated from the public page of the script:
 `python3 tools/build.py tools/public-original.html <exec URL> index.html`
 then commit and push to `main`: GitHub Pages updates the live page in about a minute.
+
+## Student pages (contract signing, proof of payment)
+- `/sign/?k=…` (contract) and `/deposit/?k=…` (proof of the deposit transfer): copies of the ELV Rooms student page without the Google banner.
+- They load the page from `<exec URL>?k=…&raw=1` and replace `google.script.run` with POST `{"action":"student","fn","args"}` (only `contractPdf`, `signOnline`, `uploadSigned`, each checks the booking token).
+- Rebuild: `python3 tools/build_student.py .`
+- The e-mails send these links only when the Script property `STUDENT_PAGES` = `github`; otherwise they send the Google links. Old links keep working.
