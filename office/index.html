@@ -325,21 +325,22 @@ function busyIn(r,f,t){return r.occ.filter(o=>o.from<=t&&o.to>=f)}
 function xModes(){return '<div class="acts" style="justify-content:flex-start;margin-top:6px"><button class="a'+(XMODE==='ext'?' p':'')+'" data-xm="ext">Extend (same room)</button><button class="a'+(XMODE==='move'?' p':'')+'" data-xm="move">Change room</button></div>'}
 /* "Change room": first month in the new room, last month, free room, prices, deposit difference */
 function moveForm(x){const close='<div class="acts" style="justify-content:flex-start"><button class="a" data-xc="1">Cancel</button></div>';
- const froms=[];for(let m=add(x.from||D.start,1);m<=x.to;m=add(m,1))if(m>=D.start)froms.push(m);
+ const froms=[];for(let m=add(x.from||D.start,1);m<=add(x.to,1);m=add(m,1))if(m>=D.start&&m<=D.end)froms.push(m);
  if(!froms.length)return '<div class="warnbox" style="margin-top:6px">No month left to move: the stay ends '+lab(x.to)+'.</div>'+close;
  if(!froms.includes(XM.from))XM.from=froms[0];
- if(!XM.to||XM.to<XM.from)XM.to=x.to<XM.from?XM.from:x.to;
+ const tos0=[];for(let m=XM.from;m<=D.end;m=add(m,1))tos0.push(m);
+ if(!XM.to||XM.to<XM.from)XM.to=x.to>=XM.from?x.to:(tos0.find(m=>m.slice(5)==='06')||tos0.find(m=>m.slice(5)==='01')||XM.from);
  const opts=[];D.flats.forEach(f=>f.rooms.forEach(r=>{if(f.id===x.flatId&&r.room===x.room)return;opts.push({k:f.id+'#'+r.room,f,r,free:!busyIn(r,XM.from,XM.to).length})}));
  if(!opts.some(o=>o.k===XM.k&&o.free))XM.k='';
  const sel=opts.find(o=>o.k===XM.k),tos=[];for(let m=XM.from;m<=D.end;m=add(m,1))tos.push(m);
- let s='<div class="form" style="margin-top:8px"><div class="g3"><label>First month in the new room<select id="mf">'+froms.map(m=>'<option value="'+m+'"'+(m===XM.from?' selected':'')+'>'+lab(m)+'</option>').join('')+'</select></label>'+
+ let s='<div class="form" style="margin-top:8px"><div class="g3"><label>First month in the new room<select id="mf">'+froms.map(m=>'<option value="'+m+'"'+(m===XM.from?' selected':'')+'>'+lab(m)+(m>x.to?' (after the current stay)':'')+'</option>').join('')+'</select></label>'+
   '<label>Last month<select id="mt">'+tos.map(m=>'<option value="'+m+'"'+(m===XM.to?' selected':'')+'>'+lab(m)+(m===x.to?' (current end)':'')+'</option>').join('')+'</select></label>'+
   '<label>New room (free for these months)<select id="mk"><option value="">Choose…</option>'+opts.filter(o=>o.free).map(o=>'<option value="'+esc(o.k)+'"'+(o.k===XM.k?' selected':'')+'>'+esc(o.f.name)+' R'+esc(o.r.room)+' · '+o.r.rent+'+'+o.r.gastos+(o.r.cleaning?'+'+o.r.cleaning:'')+' €'+(o.f.gender&&o.f.gender!=='Mixed'?' · '+esc(o.f.gender):'')+'</option>').join('')+'</select></label></div>';
  if(!sel)return s+'<p class="meta" style="margin:0">'+(opts.some(o=>o.free)?'Choose the new room.':'No room is free for these months.')+'</p>'+close+'</div>';
  const held=x.deposit||0,nd=sel.r.deposit||0,diff=Math.max(0,nd-held);
  return s+'<div class="g3"><label>Rent €<input id="xr" value="'+sel.r.rent+'"></label><label>Utilities €<input id="xg" value="'+sel.r.gastos+'"></label><label>Cleaning €<input id="xc" value="'+sel.r.cleaning+'"></label></div>'+
   '<label>E-mail (the contract is sent here)<input id="xem" type="email" value="'+esc(x.email)+'"></label>'+(x.idNumber?'':'<label>ID number (missing in Tenants)<input id="xid"></label>')+
-  '<p class="meta" style="margin:0;display:block">Deposit held: '+held+' € · new room deposit: '+nd+' € → '+(diff?'<span style="font-weight:700;color:var(--ink)">difference to pay after signing: '+diff+' €</span>':'<span style="font-weight:700;color:var(--ink)">nothing to pay</span> (the current deposit is kept)')+'. No agency fee. Once signed'+(diff?' and the difference received':'')+', the stay in '+esc(flatName(x.flatId))+' R'+esc(x.room)+' ends '+lab(add(XM.from,-1))+' automatically.</p>'+
+  '<p class="meta" style="margin:0;display:block">Deposit held: '+held+' € · new room deposit: '+nd+' € → '+(diff?'<span style="font-weight:700;color:var(--ink)">difference to pay after signing: '+diff+' €</span>':'<span style="font-weight:700;color:var(--ink)">nothing to pay</span> (the current deposit is kept)')+'. No agency fee. Once signed'+(diff?' and the difference received':'')+', '+(XM.from>x.to?'the new room follows the current stay ('+esc(flatName(x.flatId))+' R'+esc(x.room)+' until '+lab(x.to)+').':'the stay in '+esc(flatName(x.flatId))+' R'+esc(x.room)+' ends '+lab(add(XM.from,-1))+' automatically.')+'</p>'+
   '<div class="acts" style="justify-content:flex-start"><button class="a p" id="mgo">Send room change contract</button><button class="a" data-xc="1">Cancel</button></div></div>'}
 function renderExtend(){const q=XQ.toLowerCase();const T=(D.tenants||[]).filter(x=>!q||(x.name+' '+flatName(x.flatId)).toLowerCase().includes(q));
  let h='<div class="tools"><input id="xq" placeholder="Search tenant or flat…" value="'+esc(XQ)+'" style="flex:1;max-width:320px"><button class="a" id="xrf">Refresh</button></div>'+
