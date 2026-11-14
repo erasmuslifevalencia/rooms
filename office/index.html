@@ -340,7 +340,8 @@ function moveForm(x){const close='<div class="acts" style="justify-content:flex-
  const held=x.deposit||0,nd=sel.r.deposit||0,diff=Math.max(0,nd-held);
  return s+'<div class="g3"><label>Rent €<input id="xr" value="'+sel.r.rent+'"></label><label>Utilities €<input id="xg" value="'+sel.r.gastos+'"></label><label>Cleaning €<input id="xc" value="'+sel.r.cleaning+'"></label></div>'+
   '<label>E-mail (the contract is sent here)<input id="xem" type="email" value="'+esc(x.email)+'"></label>'+(x.idNumber?'':'<label>ID number (missing in Tenants)<input id="xid"></label>')+
-  '<p class="meta" style="margin:0;display:block">Deposit held: '+held+' € · new room deposit: '+nd+' € → '+(diff?'<span style="font-weight:700;color:var(--ink)">difference to pay after signing: '+diff+' €</span>':'<span style="font-weight:700;color:var(--ink)">nothing to pay</span> (the current deposit is kept)')+'. No agency fee. Once signed'+(diff?' and the difference received':'')+', '+(XM.from>x.to?'the new room follows the current stay ('+esc(flatName(x.flatId))+' R'+esc(x.room)+' until '+lab(x.to)+').':'the stay in '+esc(flatName(x.flatId))+' R'+esc(x.room)+' ends '+lab(add(XM.from,-1))+' automatically.')+'</p>'+
+  (diff?'<label>Deposit difference ('+diff+' €) paid by<select id="mpay"><option value="transfer"'+(XM.pay!=='cash'?' selected':'')+'>Bank transfer after signing (IBAN e-mail)</option><option value="cash"'+(XM.pay==='cash'?' selected':'')+'>Cash at the office when changing room</option></select></label>':'')+
+  '<p class="meta" style="margin:0;display:block">Deposit held: '+held+' € · new room deposit: '+nd+' € → '+(diff?'<span style="font-weight:700;color:var(--ink)">difference to pay '+(XM.pay==='cash'?'in cash':'after signing')+': '+diff+' €</span>':'<span style="font-weight:700;color:var(--ink)">nothing to pay</span> (the current deposit is kept)')+'. No agency fee. Once signed'+(diff&&XM.pay!=='cash'?' and the difference received':'')+(diff&&XM.pay==='cash'?' (the cash is recorded in the Ledger when received)':'')+', '+(XM.from>x.to?'the new room follows the current stay ('+esc(flatName(x.flatId))+' R'+esc(x.room)+' until '+lab(x.to)+').':'the stay in '+esc(flatName(x.flatId))+' R'+esc(x.room)+' ends '+lab(add(XM.from,-1))+' automatically.')+'</p>'+
   '<div class="acts" style="justify-content:flex-start"><button class="a p" id="mgo">Send room change contract</button><button class="a" data-xc="1">Cancel</button></div></div>'}
 function renderExtend(){const q=XQ.toLowerCase();const T=(D.tenants||[]).filter(x=>!q||(x.name+' '+flatName(x.flatId)).toLowerCase().includes(q));
  let h='<div class="tools"><input id="xq" placeholder="Search tenant or flat…" value="'+esc(XQ)+'" style="flex:1;max-width:320px"><button class="a" id="xrf">Refresh</button></div>'+
@@ -364,10 +365,10 @@ function renderExtend(){const q=XQ.toLowerCase();const T=(D.tenants||[]).filter(
  $('xq').oninput=e=>{XQ=e.target.value;const p=e.target.selectionStart;render();$('xq').focus();$('xq').setSelectionRange(p,p)};$('xrf').onclick=load;
  document.querySelectorAll('[data-xt]').forEach(b=>b.onclick=()=>{XID=b.dataset.xt;XMODE='ext';XM={};render()});
  document.querySelectorAll('[data-xm]').forEach(b=>b.onclick=()=>{XMODE=b.dataset.xm;render()});
- [['mf','from'],['mt','to'],['mk','k']].forEach(([i,k])=>{const el=$(i);if(el)el.onchange=()=>{XM[k]=el.value;render()}});
+ [['mf','from'],['mt','to'],['mk','k'],['mpay','pay']].forEach(([i,k])=>{const el=$(i);if(el)el.onchange=()=>{XM[k]=el.value;render()}});
  const mg=$('mgo');if(mg)mg.onclick=async()=>{if(!mg.dataset.ok){mg.dataset.ok='1';mg.textContent='Click again to send the contract';return}
   const x=(D.tenants||[]).find(z=>z.id===XID),[fid,rm]=String(XM.k||'').split('#');
-  const f={flatId:fid,room:rm,from:XM.from,to:XM.to,email:$('xem').value.trim(),rent:$('xr').value.trim(),gastos:$('xg').value.trim(),cleaning:$('xc').value.trim(),idNumber:$('xid')?$('xid').value.trim():''};
+  const f={flatId:fid,room:rm,from:XM.from,to:XM.to,email:$('xem').value.trim(),rent:$('xr').value.trim(),gastos:$('xg').value.trim(),cleaning:$('xc').value.trim(),idNumber:$('xid')?$('xid').value.trim():'',pay:$('mpay')?$('mpay').value:'transfer'};
   mg.disabled=true;mg.textContent='Sending…';
   try{const r=await call('officeChangeRoom',XID,f);const bad=/ERROR|Not possible|No IBAN|missing|incomplete|choose/i.test(r.note||'');
    toast((x?x.name+': ':'')+r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),bad);XID='';XM={};await load();TAB=bad?'all':'todo';render()}
