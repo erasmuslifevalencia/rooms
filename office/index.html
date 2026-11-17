@@ -68,7 +68,7 @@ header.top img{height:50px;width:auto;flex:none}
 header.top .ht{font:700 22px/1.1 "Josefin Sans",Inter,sans-serif;letter-spacing:.01em;display:block}
 header.top .hs{font-size:12.5px;opacity:.78;margin-top:2px}
 header.top .u{margin-left:auto;font-size:12px;opacity:1;display:flex;gap:10px;align-items:center;color:rgba(255,255,255,.8)}
-.hb{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:7px 12px;font-weight:600;font-size:13px;text-decoration:none;cursor:pointer}
+.hb{font-family:inherit;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:7px 12px;font-weight:600;font-size:13px;text-decoration:none;cursor:pointer}
 .stripe{height:4px;background:linear-gradient(90deg,#f47a24,#f9a565 40%,var(--plum))}
 nav{padding-top:14px}nav button.on{background:var(--plum);color:#fff}
 .card{border-radius:14px}.st.SIGNED{background:var(--plum2);color:var(--plum)}.meta a{color:var(--plum)}
@@ -106,7 +106,7 @@ window.google={script:{run:new Proxy({},{get(_,k0){const st={ok:()=>{},ko:()=>{}
 if(!ELV_TOKEN)document.addEventListener('DOMContentLoaded',()=>elvLogin());
 </script>
 </head><body>
-<header class="top"><div class="in"><img src="https://erasmuslifevalencia.github.io/rooms/elv-logo.png" alt="Erasmus Life"><div><b class="ht">Rooms Office</b><div class="hs">Bookings, contracts and deposits · <span id="sum"></span></div></div><span class="u"><span id="uname"></span><a id="ledger" class="hb" target="_blank">Ledger ↗</a></span></div></header><div class="stripe"></div>
+<header class="top"><div class="in"><img src="https://erasmuslifevalencia.github.io/rooms/elv-logo.png" alt="Erasmus Life"><div><b class="ht">Rooms Office</b><div class="hs">Bookings, contracts and deposits · <span id="sum"></span></div></div><span class="u"><span id="uname"></span><button class="hb" id="rf" type="button" title="Read the idealista calendars now and reload the bookings">↻ Refresh</button><a id="ledger" class="hb" target="_blank">Ledger ↗</a></span></div></header><div class="stripe"></div>
 <nav id="tabs"></nav>
 <main id="main"><p class="empty">Loading…</p></main>
 <div class="toast" id="toast"></div>
@@ -122,6 +122,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const $=id=>document.getElementById(id);
 function toast(t,err){const x=$('toast');x.textContent=t;x.className='toast'+(err?' err':'');x.style.display='block';clearTimeout(x._t);x._t=setTimeout(()=>x.style.display='none',err?8000:4000)}
 function call(fn,...a){return new Promise((ok,ko)=>google.script.run.withSuccessHandler(ok).withFailureHandler(e=>ko(e&&e.message||String(e)))[fn](TOKEN,...a))}
+async function refreshAll(){const b=$('rf');if(!b||b.disabled)return;b.disabled=true;b.textContent='↻ Refreshing…';let m='',err=false;try{const r=await call('officeSync');m=r.skipped?r.note:'idealista: '+(r.created||r.cancelled?r.created+' new, '+r.cancelled+' cancelled':'nothing new')+(r.problems?' ('+r.problems+' calendar(s) could not be read)':'')}catch(e){m='idealista not read: '+e;err=true}await load();b.disabled=false;b.textContent='↻ Refresh';toast(m,err)}
 async function load(){try{D=await call('officeData');$('ledger').href=D.ledgerUrl;render()}catch(e){$('main').innerHTML='<p class="empty">'+esc(e)+'</p>'}}
 const flag=cc=>cc&&cc.length===2&&cc!=='XK'?String.fromCodePoint(...[...cc].map(ch=>127397+ch.charCodeAt(0))):'';
 const flatName=id=>{const f=D.flats.find(x=>x.id===id);return f?f.name:id};
@@ -434,5 +435,5 @@ async function create(mode){const f={flatId:$('nf').value,room:$('nr').value,fro
  try{const r=await call('officeCreate',f,mode);const bad=/ERROR|Not possible|No IBAN|missing|incomplete|choose/i.test(r.note||'');
   toast(r.status+' · '+(r.note||'').replace(/^\[[^\]]*\]\s*/,''),bad);await load();TAB=bad?'all':'todo';render()}
  catch(e){toast(e,true);bs.forEach(b=>b.disabled=false)}}
-load();setInterval(()=>{const a=document.activeElement;if(TAB!=='new'&&TAB!=='block'&&TAB!=='extend'&&!(a&&a.classList&&a.classList.contains('rbi'))&&!(a&&a.tagName==='TEXTAREA'))load()},120000);
+$('rf').onclick=refreshAll;load();setInterval(()=>{const a=document.activeElement;if(TAB!=='new'&&TAB!=='block'&&TAB!=='extend'&&!(a&&a.classList&&a.classList.contains('rbi'))&&!(a&&a.tagName==='TEXTAREA'))load()},120000);
 </script></body></html>
