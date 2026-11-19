@@ -256,7 +256,7 @@ function kpis(){const c=a=>D.bookings.filter(b=>a.includes(b.status)).length;con
  const conf=D.bookings.filter(b=>['CONFIRMED','DEPOSIT PAID'].includes(b.status)&&inMonth(b.depositPaidAt)).length;
  return '<div class="kgrid">'+[['New requests',c(['REQUEST'])],['Waiting for signature',c(['ACCEPTED','CONTRACT SENT'])],['Deposit to check',c(['SIGNED'])],['Confirmed this month',conf]].map(([l,v])=>'<div class="k"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>').join('')+'</div>'}
 
-const RB_NAMES=['Corentin','Eszter','Office'];
+const RB_NAMES=['Corentin','Eszter','Sara','Filip','Office'];
 function rbOpts(cur){const me=D.me||{};let n=RB_NAMES.filter(x=>me.admin||!me.name||x===me.name||!(D.staff||[]).includes(x));cur=String(cur||'').trim();if(cur&&!n.includes(cur))n=n.concat([cur]);
  return '<option value="">—</option>'+n.map(x=>'<option'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('')}
 function rbRow(b){if(/^Office block/.test(b.source||''))return '';if(lockedFor(b))return '<div class="rb">Rented by <b>'+esc(b.rentedBy)+'</b></div>';return '<div class="rb">Rented by <select class="rbi" data-orig="'+esc(b.rentedBy)+'" id="rb'+esc(b.id)+'">'+rbOpts(b.rentedBy)+'</select><button class="a" data-rbs="'+esc(b.id)+'">Save</button></div>'}
