@@ -111,7 +111,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <div class="row2"><label>Move-in<select name="from" id="ffrom" required></select></label><label>Move-out (last month)<select name="to" id="fto" required></select></label></div>
 <div id="dmix"></div>
 <div class="row2"><label>Full name (as on your ID)<input name="name" required maxlength="80"></label><label>I am<select name="gender" id="fgender" required><option value="">Choose…</option><option value="Girl">a girl</option><option value="Boy">a boy</option></select></label></div>
-<div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" required></label></div>
+<div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+33 6 12 34 56 78" required></label></div>
 <div class="row2"><label>Nationality<input name="nationality" required></label><label>ID document<select name="idType"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label></div>
 <label>ID number<input name="idNumber" required></label>
 <label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date…"></textarea></label>
@@ -298,7 +298,11 @@ function fillTo(){document.getElementById('dmix').innerHTML=mixHtml(cur.f,ff.val
 for(let e=add(m,r.minMonths-1);e<=last;e=add(e,1))ends.push(e);ft.innerHTML=ends.map(e=>'<option value="'+e+'">'+lab(e)+'</option>').join('');
 ft.value=(ft2.value&&ends.includes(ft2.value)&&m===fm.value)?ft2.value:ends.find(e=>['01','06','07'].includes(e.slice(5)))||ends[0];}
 ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
-document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;o.by=BY;
+/* phone: international format required (+ country code), 00 is turned into + */
+const PH=document.querySelector('#frm [name=phone]'),phClean=v=>{v=String(v||'').trim().replace(/[\s.\-()\/]/g,'');if(v.startsWith('00'))v='+'+v.slice(2);return v};
+const phCheck=()=>{const v=phClean(PH.value);PH.setCustomValidity(!v||/^\+[1-9]\d{6,14}$/.test(v)?'':TT('Write your WhatsApp number with the country code, e.g. +33 6 12 34 56 78','Escribe tu número de WhatsApp con el prefijo del país, p. ej. +34 612 345 678'))};
+PH.addEventListener('input',phCheck);phCheck();
+document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;o.by=BY;o.phone=phClean(o.phone);
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Book this room';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
 ev.target.innerHTML='<h3>Request sent ✓</h3><p>Thank you! Our team will review your request and send you the contract by e-mail within 24–48 h. Any doubt? WhatsApp +34 695 01 48 94</p><p><b>Important:</b> our e-mails sometimes land in the <b>spam / junk folder</b>. Please check it, and if you find us there, mark the e-mail as <b>“Not spam”</b> so the next ones (contract, deposit) arrive in your inbox.</p><div style="text-align:right"><button type="button" onclick="location.reload()">Close</button></div>'})
