@@ -75,6 +75,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 .fh h2{font:700 21px/1.2 "Josefin Sans",Inter,sans-serif;color:var(--deep);letter-spacing:.01em}
 .badge{background:var(--plum2);color:var(--plum)}.badge.g{background:var(--plum2);color:var(--plum)}
 .room{border-radius:14px}.room .p{font-size:24px;font-weight:800;color:var(--deep)}
+.room .pa{grid-column:1/-1}.room .pa .big{font-size:26px;font-weight:800;color:var(--deep)}.room .pa .plus{color:var(--muted);font-size:15px;margin-left:2px;white-space:nowrap}.room .pa .tot{font-size:14px;margin-top:1px}
 .views button.on{background:var(--plum2);color:var(--plum)}
 .views button{display:inline-flex;align-items:center;gap:6px}.views .ic{width:15px;height:15px;flex:none}
 .cal th.hl{background:#fde8d8}
@@ -100,7 +101,7 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <div class="filters"><div class="in">
 <select id="fm" aria-label="Move-in month"></select><select id="ft2" aria-label="Move-out month" disabled></select>
 <select id="fg" aria-label="Flat type"><option value="">All flats</option><option>Mixed</option><option>Girls only</option></select>
-<select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Up to 400 €/month</option><option value="450">Up to 450 €/month</option><option value="500">Up to 500 €/month</option><option value="550">Up to 550 €/month</option></select>
+<select id="fp" aria-label="Max price"><option value="">Any price</option><option value="400">Rent up to 400 €/month</option><option value="450">Rent up to 450 €/month</option><option value="500">Rent up to 500 €/month</option><option value="550">Rent up to 550 €/month</option></select>
 <span id="cnt" class="sub"></span><span class="views" style="margin-left:auto"><button type="button" id="vl" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>List</button><button type="button" id="vc"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar</button></span></div></div>
 <main id="list"><p class="none" id="loading">Loading the rooms…</p></main>
 <footer>Prices per month. Utilities (internet, electricity, water, gas) are an advance adjusted with the real bills at the end of the contract. Deposit paid by bank transfer, refunded within 2 months after the contract ends. Questions: WhatsApp +34 695 01 48 94.</footer>
@@ -159,10 +160,10 @@ const ES_EXACT={
 };
 const ES_RULES=[
  [/^From ([A-Z][a-z]{2} \d{4})$/,'Desde $1'],[/^Until ([A-Z][a-z]{2} \d{4})$/,'Hasta $1'],
- [/Up to (\d+) €\/month/g,'Hasta $1 €/mes'],[/^(\d+) rooms$/,'$1 habitaciones'],[/^1 room$/,'1 habitación'],
+ [/Rent up to (\d+) €\/month/g,'Alquiler hasta $1 €/mes'],[/^(\d+) rooms$/,'$1 habitaciones'],[/^1 room$/,'1 habitación'],
  [/Flatmates in /g,'Compañeros en '],[/Available from /g,'Disponible desde '],[/\bfrom (?=[A-Z][a-z]{2} \d{4})/g,'desde '],[/ to (?=[A-Z][a-z]{2} \d{4})/g,' hasta '],
  [/Request room (\S+) /g,'Solicitar habitación $1 '],[/\bRoom\b/g,'Habitación'],[/· floor /g,'· planta '],
- [/€ rent/g,'€ alquiler'],[/€ utilities/g,'€ gastos'],[/€ cleaning/g,'€ limpieza'],[/€\/month/g,'€/mes'],[/\/month/g,'/mes'],
+ [/€ rent/g,'€ alquiler'],[/\ball included\b/g,'todo incluido'],[/€ utilities/g,'€ gastos'],[/€ cleaning/g,'€ limpieza'],[/€\/month/g,'€/mes'],[/\/month/g,'/mes'],
  [/\bDeposit\b/g,'Fianza'],[/\bdeposit\b/g,'fianza'],[/\bMin\. (\d+) months\b/g,'Mín. $1 meses'],[/\bminimum (\d+) months\b/g,'mínimo $1 meses'],
  [/(\d+) girls\b/g,'$1 chicas'],[/(\d+) girl\b/g,'$1 chica'],[/(\d+) boys\b/g,'$1 chicos'],[/(\d+) boy\b/g,'$1 chico'],
  [/♀ girl\b/g,'♀ chica'],[/♂ boy\b/g,'♂ chico'],[/\bfree\b/g,'libre'],[/\btaken\b/g,'ocupada'],
@@ -202,15 +203,15 @@ function fits(r,m){return r.windows.some(w=>w.from<=m&&m<=w.to&&span(m,w.open?D.
 function fitsRange(r,a,b){if(!b)return fits(r,a);return span(a,b)>=r.minMonths&&r.windows.some(w=>w.from<=a&&(w.open||b<=w.to))}
 let VIEW='list';
 function render(){if(VIEW==='cal')return renderCal();const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0;let n=0;
-const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return'';n+=rooms.length;
+const html=D.flats.filter(flatOk).map(f=>{const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent<=p));if(!rooms.length)return'';n+=rooms.length;
 return '<section class="flat" id="f-'+esc(f.id)+'"><div class="gal'+(f.photos.length?'':' empty')+'">'+f.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,800))+'" alt="">').join('')+'</div>'+
 '<div class="fh"><div><h2>'+esc(f.name)+'</h2><div class="addr">'+esc([f.street,f.number].filter(Boolean).join(' '))+(f.floor?' · floor '+esc(f.floor):'')+' · Valencia</div></div>'+
 '<div><span class="badge'+(f.gender!=='Mixed'?' g':'')+'">'+esc(f.gender)+'</span></div></div>'+mixHtml(f,m||firstFree(f,rooms))+((LANG==='es'&&f.descriptionEs)||f.description?'<p class="desc">'+esc((LANG==='es'&&f.descriptionEs)||f.description)+'</p>':'')+
 '<div class="rooms">'+rooms.map(r=>{const w=r.windows[0];const tot=r.rent+r.gastos+r.cleaning;
 return '<div class="room"><div><div class="t">Room '+esc(r.room)+(r.ref?' <span class="sub">· ref '+esc(r.ref)+'</span>':'')+'</div>'+
 '<div class="av">Available '+r.windows.map(w=>'from '+lab(w.from)+(w.open?'':' to '+lab(w.to))).join(' · ')+'</div></div>'+
-'<div class="p">'+tot+' € <small>/month</small></div>'+
-'<div class="meta"><span>'+r.rent+' € rent</span><span>+ '+r.gastos+' € utilities</span>'+(r.cleaning?'<span>+ '+r.cleaning+' € cleaning</span>':'')+'<span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
+'<div class="pa"><span class="big">'+r.rent+' €</span> <span class="plus">+ '+r.gastos+' € utilities</span>'+(r.cleaning?' <span class="plus">+ '+r.cleaning+' € cleaning</span>':'')+'<div class="tot">= <b>'+tot+' €/month</b> all included</div></div>'+
+'<div class="meta"><span>Deposit '+r.deposit+' €</span>'+(r.minMonths>1?'<span><b>Min. '+r.minMonths+' months</b></span>':'')+'</div>'+
 (r.description?'<div class="meta">'+esc(r.description)+'</div>':'')+(r.photos.length?'<div class="rph">'+r.photos.map(u=>'<img loading="lazy" decoding="async" src="'+esc(psz(u,400))+'" alt="">').join('')+'</div>':'')+
 '<div style="grid-column:1/-1"><button onclick="openReq(\''+f.id+'\',\''+esc(r.room)+'\')">Request this room</button></div></div>'}).join('')+'</div></section>'}).join('');
 document.getElementById('list').innerHTML=html||'<p class="none">No room matches these filters. Try other months, or ask us on WhatsApp +34 695 01 48 94.</p>';
@@ -252,11 +253,11 @@ function updateMap(){if(!SHOW_MAP||!D)return;const wrap=document.getElementById(
   MAPL=L.markerClusterGroup?L.markerClusterGroup({maxClusterRadius:28,showCoverageOnHover:false,spiderfyOnMaxZoom:true,
    iconCreateFunction:c=>L.divIcon({className:'',html:'<span class="pin cl">'+c.getChildCount()+' '+TT('flats','pisos')+'</span>',iconSize:null})}):L.layerGroup();
   const m=fm.value,to=ft2.value,p=+document.getElementById('fp').value||0,pts=[];
-  D.flats.filter(flatOk).forEach(f=>{const g=geoOf(f);if(!g)return;const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent+r.gastos+r.cleaning<=p));if(!rooms.length)return;
-   const min=Math.min(...rooms.map(r=>r.rent+r.gastos+r.cleaning));
+  D.flats.filter(flatOk).forEach(f=>{const g=geoOf(f);if(!g)return;const rooms=f.rooms.filter(r=>(!m||fitsRange(r,m,to))&&(!p||r.rent<=p));if(!rooms.length)return;
+   const min=Math.min(...rooms.map(r=>r.rent));
    const mk=L.marker(g,{icon:L.divIcon({className:'',html:'<span class="pin'+(f.gender==='Girls only'?' g':'')+'">'+min+' €</span>',iconSize:null}),title:f.name});
    mk.bindPopup('<div class="pop"><b>'+esc(f.name)+'</b>'+(f.gender!=='Mixed'?' · '+esc(f.gender==='Girls only'?TT('Girls only','Solo chicas'):f.gender):'')+'<br>'+
-    rooms.length+' '+TT(rooms.length===1?'room':'rooms',rooms.length===1?'habitación':'habitaciones')+' · '+TT('from','desde')+' '+min+' €/'+TT('month','mes')+
+    rooms.length+' '+TT(rooms.length===1?'room':'rooms',rooms.length===1?'habitación':'habitaciones')+' · '+TT('from','desde')+' '+min+' €/'+TT('month','mes')+' + '+TT('utilities','gastos')+
     '<br><a href="#f-'+esc(f.id)+'" data-go="'+esc(f.id)+'">'+TT('See rooms','Ver habitaciones')+'</a></div>');
    MAPL.addLayer(mk);pts.push(g)});
   MAP.addLayer(MAPL);
@@ -287,7 +288,7 @@ return '<div class="mix"><span class="lbl">Flatmates in '+lab(m)+':</span>'+chip
 let cur=null;const dlg=document.getElementById('dlg'),ff=document.getElementById('ffrom'),ft=document.getElementById('fto');
 function openReq(fid,room,pm){const f=D.flats.find(x=>x.id===fid),r=f.rooms.find(x=>x.room===room);cur={f,r};
 document.getElementById('dt').textContent=f.name+' · Room '+r.room;
-document.getElementById('dd').textContent=(r.rent+r.gastos+r.cleaning)+' €/month · deposit '+r.deposit+' €'+(r.minMonths>1?' · minimum '+r.minMonths+' months':'');
+document.getElementById('dd').textContent=r.rent+' € rent + '+r.gastos+' € utilities'+(r.cleaning?' + '+r.cleaning+' € cleaning':'')+' = '+(r.rent+r.gastos+r.cleaning)+' €/month · deposit '+r.deposit+' €'+(r.minMonths>1?' · minimum '+r.minMonths+' months':'');
 const starts=[];r.windows.forEach(w=>{for(let m=w.from;m<=w.to;m=add(m,1))if(fits(r,m))starts.push(m)});
 ff.innerHTML=starts.map(m=>'<option value="'+m+'">'+lab(m)+'</option>').join('');if(pm&&starts.includes(pm))ff.value=pm;else if(fm.value&&starts.includes(fm.value))ff.value=fm.value;fillTo();
 const gs=document.getElementById('fgender');gs.querySelectorAll('option').forEach(o=>{o.disabled=(f.gender==='Girls only'&&o.value==='Boy')||(f.gender==='Boys only'&&o.value==='Girl')});
