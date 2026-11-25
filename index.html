@@ -111,8 +111,8 @@ header.top{max-width:none;margin:0;padding:0}.dlg h3{font:700 20px/1.2 "Josefin 
 <div class="row2"><label>Move-in<select name="from" id="ffrom" required></select></label><label>Move-out (last month)<select name="to" id="fto" required></select></label></div>
 <div id="dmix"></div>
 <div class="row2"><label>Full name (as on your ID)<input name="name" required maxlength="80"></label><label>I am<select name="gender" id="fgender" required><option value="">Choose…</option><option value="Girl">a girl</option><option value="Boy">a boy</option></select></label></div>
-<div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+33 6 12 34 56 78" required></label></div>
-<div class="row2"><label>Nationality<input name="nationality" required></label><label>ID document<select name="idType"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label></div>
+<div class="row2"><label>E-mail<input name="email" type="email" required></label><label>Phone / WhatsApp<input name="phone" type="tel" inputmode="tel" autocomplete="tel" required></label></div>
+<div class="row2"><label>Nationality<select name="nationality" id="fnat" required><option value="">Choose…</option></select></label><label>ID document<select name="idType"><option value="PASSPORT">Passport</option><option value="DNI">National ID card</option><option value="NIE">NIE</option></select></label></div>
 <label>ID number<input name="idNumber" required></label>
 <label>Message (optional)<textarea name="message" rows="2" placeholder="University, arrival date…"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off">
@@ -302,6 +302,10 @@ ff.onchange=fillTo;document.getElementById('cl').onclick=()=>dlg.close();
 const PH=document.querySelector('#frm [name=phone]'),phClean=v=>{v=String(v||'').trim().replace(/[\s.\-()\/]/g,'');if(v.startsWith('00'))v='+'+v.slice(2);return v};
 const phCheck=()=>{const v=phClean(PH.value);PH.setCustomValidity(!v||/^\+[1-9]\d{6,14}$/.test(v)?'':TT('Write your WhatsApp number with the country code, e.g. +33 6 12 34 56 78','Escribe tu número de WhatsApp con el prefijo del país, p. ej. +34 612 345 678'))};
 PH.addEventListener('input',phCheck);phCheck();
+/* nationality: list of countries, shown in the page language, saved in Spanish (the contract is in Spanish) */
+(()=>{const sel=document.getElementById('fnat');if(!sel||!window.Intl||!Intl.DisplayNames)return;const show=new Intl.DisplayNames([LANG==='es'?'es':'en'],{type:'region'}),es=new Intl.DisplayNames(['es'],{type:'region'});
+ const L='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW'.split(' ').map(c=>[show.of(c),es.of(c)]).sort((a,b)=>a[0].localeCompare(b[0],LANG));
+ sel.insertAdjacentHTML('beforeend',L.map(([a,v])=>'<option value="'+esc(v)+'">'+esc(a)+'</option>').join(''))})();
 document.getElementById('frm').onsubmit=ev=>{ev.preventDefault();const fd=new FormData(ev.target);const o={};fd.forEach((v,k)=>o[k]=v);o.accept=!!fd.get('accept');o.lang=LANG;o.by=BY;o.phone=phClean(o.phone);
 o.flatId=cur.f.id;o.room=cur.r.room;const b=document.getElementById('send');b.disabled=true;b.textContent='Sending…';
 post({action:'request',form:o}).then(res=>{b.disabled=false;b.textContent='Book this room';if(!res.ok){document.getElementById('ferr').textContent=res.error;if(window.turnstile)turnstile.reset();return}
